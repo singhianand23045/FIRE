@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FIRE | The Oracle</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@400;600;800&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --gold-light: #FBEAAB;
+            --gold-main: #D4AF37;
+            --gold-dark: #997A15;
+            --bg-dark: #050301;
+            --serif: 'Cormorant Garamond', Georgia, serif;
+            --sans: 'Inter', -apple-system, sans-serif;
+        }
+
+        html,
+        body {
+            height: 100%;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--sans);
+            overflow: hidden;
+        }
+
+        /* Nav (Dev only) */
+        .nav {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            z-index: 10;
+        }
+
+        .nb {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 11px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .nb.on {
+            background: rgba(212, 175, 55, 0.15);
+            border-color: var(--gold-main);
+            color: var(--gold-main);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+        }
+
+        /* iPhone Container */
+        .phone {
+            width: 390px;
+            height: 844px;
+            /* iPhone 14 Pro dimensions */
+            background: var(--bg-dark);
+            border-radius: 55px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 0 2px #1a1a1a, 0 40px 80px rgba(0, 0, 0, 0.8), inset 0 0 0 4px #000;
+        }
+
+        .dynamic-island {
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 35px;
+            background: #000;
+            border-radius: 30px;
+            z-index: 999;
+        }
+
+        /* Screens */
+        .screen {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .screen.on {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        /* Global Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulseGlow {
+
+            0%,
+            100% {
+                filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.3));
+            }
+
+            50% {
+                filter: drop-shadow(0 0 30px rgba(212, 175, 55, 0.7));
+            }
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+
+        @keyframes popIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+
+            70% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes hitFlash {
+            0% {
+                background: #fff;
+                transform: scale(1.3);
+                box-shadow: 0 0 50px #fff;
+            }
+
+            100% {
+                background: radial-gradient(circle at 30% 30%, var(--gold-light), var(--gold-main));
+                transform: scale(1);
+            }
+        }
+
+        /* Typography */
+        h1.fire-title {
+            font-family: var(--serif);
+            font-size: 110px;
+            font-weight: 300;
+            letter-spacing: 20px;
+            background: linear-gradient(180deg, #FFF 0%, var(--gold-main) 70%, var(--gold-dark) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-top: 20px;
+            filter: drop-shadow(0 10px 20px rgba(212, 175, 55, 0.2));
+            transform: translateX(10px);
+            /* optical centering for letter-spacing */
+        }
+
+        /* Orbs / Balls */
+        .ball-grid {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding: 0 20px;
+        }
+
+        .ball {
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--sans);
+            font-size: 20px;
+            font-weight: 800;
+            box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.1), 0 10px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .ball.player {
+            background: linear-gradient(145deg, #2a2a2a, #111);
+            border: 2px solid #333;
+            color: #888;
+        }
+
+        .ball.player.active {
+            border-color: var(--gold-main);
+            color: var(--gold-main);
+            box-shadow: inset 0 0 15px rgba(212, 175, 55, 0.2);
+        }
+
+        .ball.drawn {
+            background: #000;
+            color: transparent;
+            border: 1px solid #222;
+            opacity: 0;
+            transform: translateY(-50px);
+        }
+
+        .ball.drawn.reveal {
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            color: #555;
+        }
+
+        .ball.drawn.hit {
+            background: radial-gradient(circle at 30% 30%, var(--gold-light), var(--gold-main));
+            color: #000;
+            animation: hitFlash 0.6s ease-out forwards;
+            border: none;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.5);
+        }
+
+        /* Buttons */
+        .btn-primary {
+            width: 85%;
+            padding: 22px;
+            border-radius: 24px;
+            border: none;
+            background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold-main) 40%, var(--gold-dark) 100%);
+            color: #000;
+            font-family: var(--sans);
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 15px 30px rgba(212, 175, 55, 0.3), inset 0 2px 0 rgba(255, 255, 255, 0.5);
+            transition: all 0.1s;
+        }
+
+        .btn-primary:active {
+            transform: translateX(-50%) scale(0.96);
+            box-shadow: 0 5px 15px rgba(212, 175, 55, 0.2);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--gold-dark);
+            color: var(--gold-main);
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.1);
+            inset: auto;
+            bottom: 50px;
+        }
+
+        /* Screen Specifics */
+        #ss {
+            justify-content: center;
+            background: radial-gradient(circle at 50% 40%, rgba(153, 122, 21, 0.2), #050301 60%);
+        }
+
+        .eye-container {
+            animation: float 4s ease-in-out infinite;
+            margin-bottom: -20px;
+        }
+
+        #so {
+            justify-content: flex-start;
+            padding-top: 120px;
+            background: radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.15), var(--bg-dark) 50%);
+        }
+
+        .oracle-text {
+            font-family: var(--serif);
+            font-size: 32px;
+            font-style: italic;
+            color: #FFF;
+            text-align: center;
+            margin: 40px 30px;
+            line-height: 1.3;
+            animation: fadeInUp 1s forwards;
+            opacity: 0;
+        }
+
+        #sd {
+            justify-content: flex-start;
+            padding-top: 80px;
+        }
+
+        .draw-section {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            margin-top: 40px;
+        }
+
+        .draw-label {
+            text-align: center;
+            color: var(--gold-main);
+            font-size: 12px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            opacity: 0.6;
+            margin-bottom: -20px;
+        }
+
+        .whisper-text {
+            font-family: var(--serif);
+            font-size: 24px;
+            font-style: italic;
+            color: #fff;
+            text-align: center;
+            height: 60px;
+            margin-top: 20px;
+            transition: opacity 0.3s;
+        }
+
+        #sr {
+            background: radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.2), #000 70%);
+            justify-content: center;
+        }
+
+        .result-number {
+            font-family: var(--sans);
+            font-size: 180px;
+            font-weight: 800;
+            color: #FFF;
+            line-height: 0.8;
+            text-shadow: 0 0 50px rgba(212, 175, 55, 0.8);
+            animation: popIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .result-label {
+            color: var(--gold-main);
+            font-size: 20px;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            margin-top: 20px;
+            font-weight: 600;
+        }
+
+        .multiplier {
+            background: rgba(212, 175, 55, 0.1);
+            border: 1px solid var(--gold-main);
+            padding: 8px 16px;
+            border-radius: 20px;
+            color: #fff;
+            font-size: 14px;
+            margin-top: 30px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="nav">
+        <button class="nb on" onclick="go('ss',this)">1. Splash</button>
+        <button class="nb" onclick="go('so',this)">2. Offer</button>
+        <button class="nb" onclick="go('sd',this);startDraw()">3. Draw</button>
+        <button class="nb" onclick="go('sr',this);">4. Result</button>
+    </div>
+
+    <div class="phone">
+        <div class="dynamic-island"></div>
+
+        <div class="screen on" id="ss" onclick="go('so',null)">
+            <div class="eye-container" style="animation: pulseGlow 3s infinite;">
+                <svg width="120" height="70" viewBox="0 0 120 70">
+                    <path d="M10,35 Q60,-10 110,35 Q60,80 10,35" fill="none" stroke="#D4AF37" stroke-width="2" />
+                    <circle cx="60" cy="35" r="18" fill="#D4AF37" />
+                    <circle cx="60" cy="35" r="8" fill="#000" />
+                    <circle cx="55" cy="30" r="3" fill="#FFF" />
+                </svg>
+            </div>
+            <h1 class="fire-title">FIRE</h1>
+            <p
+                style="color: rgba(255,255,255,0.3); font-size: 12px; letter-spacing: 5px; text-transform: uppercase; margin-top: 40px; animation: pulseGlow 2s infinite;">
+                Tap to Ignite</p>
+        </div>
+
+        <div class="screen" id="so">
+            <div class="eye-container" style="transform: scale(0.6);">
+                <svg width="120" height="70" viewBox="0 0 120 70">
+                    <path d="M10,35 Q60,-10 110,35 Q60,80 10,35" fill="none" stroke="#D4AF37" stroke-width="2" />
+                    <circle cx="60" cy="35" r="18" fill="#D4AF37" />
+                    <circle cx="60" cy="35" r="8" fill="#000" />
+                </svg>
+            </div>
+            <div class="oracle-text" id="o-quote">"The ether shifted.<br>These numbers belong to you."</div>
+            <div class="ball-grid" style="animation: fadeInUp 1s forwards; animation-delay: 0.3s; opacity: 0;">
+                <div class="ball player">4</div>
+                <div class="ball player">17</div>
+                <div class="ball player">22</div>
+                <div class="ball player">31</div>
+                <div class="ball player">38</div>
+                <div class="ball player">44</div>
+            </div>
+            <button class="btn-primary" onclick="go('sd',null);startDraw()"
+                style="animation: fadeInUp 1s forwards; animation-delay: 0.6s; opacity: 0;">Reveal Fate</button>
+        </div>
+
+        <div class="screen" id="sd">
+            <div class="draw-label">Your Connection</div>
+            <div class="ball-grid" id="d-your"></div>
+
+            <div class="draw-section">
+                <div class="draw-label">The Oracle Draws</div>
+                <div class="ball-grid" id="d-drawn"></div>
+            </div>
+
+            <div class="whisper-text" id="d-whisper">"Gazing into the void..."</div>
+        </div>
+
+        <div class="screen" id="sr">
+            <div class="result-number">3</div>
+            <div class="result-label">Matches Forged</div>
+            <div class="multiplier">STREAK ACTIVE: 1.5x REWARDS</div>
+            <button class="btn-primary" onclick="go('so',null)" style="bottom: 110px;">Play Again</button>
+            <button class="btn-primary btn-secondary" onclick="go('ss',null)">Cash Out</button>
+        </div>
+
+    </div>
+
+    <script>
+        const QUOTES = [
+            '"The ether shifted.<br>These numbers belong to you."',
+            '"I looked into the fire.<br>This is what remained."',
+            '"Do you feel the pull?<br>It begins."'
+        ];
+        let qi = 0;
+
+        function go(id, btn) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('on'));
+            document.getElementById(id).classList.add('on');
+            if (btn) {
+                document.querySelectorAll('.nb').forEach(b => b.classList.remove('on'));
+                btn.classList.add('on');
+            }
+            if (id === 'so') {
+                document.getElementById('o-quote').innerHTML = QUOTES[qi++ % QUOTES.length];
+            }
+        }
+
+        // Draw Logic
+        const PLAYER = [4, 17, 22, 31, 38, 44];
+        const DRAWN = [22, 9, 31, 15, 38, 3];
+        const WHISPERS = ["One match...", "Two... the fire grows...", "Three! The Oracle burns!"];
+
+        function startDraw() {
+            const py = document.getElementById('d-your');
+            const dr = document.getElementById('d-drawn');
+            const w = document.getElementById('d-whisper');
+
+            py.innerHTML = ''; dr.innerHTML = ''; w.textContent = '"Gazing into the void..."';
+
+            // Build Player row
+            PLAYER.forEach(n => {
+                py.innerHTML += `<div class="ball player" id="p-${n}">${n}</div>`;
+            });
+
+            // Build Draw row (hidden initially)
+            DRAWN.forEach((n, i) => {
+                dr.innerHTML += `<div class="ball drawn" id="d-${i}">${n}</div>`;
+            });
+
+            let matchCount = 0;
+
+            // Staggered reveal
+            DRAWN.forEach((n, i) => {
+                setTimeout(() => {
+                    const drawnBall = document.getElementById(`d-${i}`);
+                    drawnBall.classList.add('reveal');
+
+                    // Check for hit
+                    if (PLAYER.includes(n)) {
+                        setTimeout(() => {
+                            drawnBall.classList.add('hit');
+                            document.getElementById(`p-${n}`).classList.add('active');
+
+                            w.style.opacity = 0;
+                            setTimeout(() => {
+                                w.textContent = WHISPERS[matchCount];
+                                w.style.opacity = 1;
+                                matchCount++;
+                            }, 150);
+                        }, 300); // Slight delay for suspense before the "hit" registers
+                    }
+                }, (i * 1200) + 800); // Slower, rhythmic pacing (1.2s between pulls)
+            });
+
+            // Auto-transition to results
+            setTimeout(() => { go('sr', document.querySelectorAll('.nb')[3]); }, (DRAWN.length * 1200) + 2500);
+        }
+    </script>
+</body>
+
+</html>

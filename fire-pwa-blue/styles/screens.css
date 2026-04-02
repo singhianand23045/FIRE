@@ -1,0 +1,766 @@
+/* ─────────────────────────────────────────────────────────────
+   FIRE PWA — Screen Styles
+   Layout and visual styles for each screen.
+   All colours/spacing from tokens.css.
+───────────────────────────────────────────────────────────── */
+
+/* ── Base screen ──────────────────────────────────────────── */
+
+.screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  background: var(--bg);
+  /* Prevent iOS momentum scroll overscroll */
+  overscroll-behavior: none;
+}
+
+.screen::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 40%, transparent 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.screen--active {
+  opacity: 1;
+  pointer-events: all;
+  animation: screenEnter 0.45s var(--ease-out) both;
+}
+
+.screen--exit {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s var(--ease-in);
+}
+
+/* ── Safe area padding ────────────────────────────────────── */
+
+.safe-top {
+  padding-top: var(--safe-top);
+}
+
+.safe-bottom {
+  padding-bottom: var(--safe-bottom);
+}
+
+.safe-both {
+  padding-top: var(--safe-top);
+  padding-bottom: var(--safe-bottom);
+}
+
+/* ── Jackpot banner offset ────────────────────────────────── */
+/* Screens below the fixed jackpot banner get top padding     */
+
+:root {
+  --jackpot-bar-height: 64px;
+}
+
+/* All screens except splash clear the jackpot banner */
+#screen-first-reveal,
+#screen-reveal,
+#screen-result,
+#screen-ritual,
+#screen-soul-profile {
+  padding-top: var(--jackpot-bar-height);
+}
+
+/* ── Status bar ───────────────────────────────────────────── */
+
+.status-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--safe-top);
+  min-height: 44px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 24px 6px;
+  z-index: 1000;
+  background: transparent;
+  pointer-events: none;
+}
+
+.status-bar__time {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.3px;
+}
+
+.status-bar__icons {
+  font-size: 13px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* ── ═══════════════════════════════════════════════════════ ──
+   SCREEN 0: SPLASH
+── ═══════════════════════════════════════════════════════ ── */
+
+#screen-splash {
+  background: #1C3610;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.splash__eye-wrap {
+  margin-bottom: var(--s8);
+}
+
+.splash__title {
+  font-family: var(--font-serif);
+  font-size: 72px;
+  font-weight: 300;
+  letter-spacing: 20px;
+  color: var(--gold);
+  text-shadow: 0 0 40px var(--gold-glow);
+  margin-bottom: var(--s2);
+  line-height: 1;
+  animation: fadeIn 1.2s ease 0.8s both;
+}
+
+.splash__sub {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 6px;
+  color: var(--text3);
+  text-transform: uppercase;
+  animation: fadeIn 1s ease 1.4s both;
+}
+
+.splash__tap-hint {
+  position: absolute;
+  bottom: calc(var(--safe-bottom) + 32px);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  animation: blink 2s ease-in-out 2.2s infinite;
+}
+
+/* ── ═══════════════════════════════════════════════════════ ──
+   SCREEN 1: FIRST REVEAL (Oracle speaks)
+── ═══════════════════════════════════════════════════════ ── */
+
+#screen-first-reveal {
+  background: radial-gradient(ellipse at 50% 25%, #3A6022 0%, #1C3610 65%);
+  padding: 0;
+  gap: var(--s2);
+}
+
+.first-reveal__eyewrap {
+  margin-bottom: var(--s6);
+}
+
+.first-reveal__quote {
+  font-family: var(--font-serif);
+  font-size: 26px;
+  font-weight: 300;
+  font-style: italic;
+  color: var(--plat);
+  text-align: center;
+  line-height: 1.55;
+  margin-bottom: var(--s10);
+  opacity: 0;
+}
+
+.first-reveal__quote.is-visible {
+  animation: slideUp 0.9s var(--ease-out) both;
+  opacity: 1;
+}
+
+.first-reveal__numbers {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: nowrap;
+  margin-bottom: var(--s10);
+  opacity: 0;
+  padding: 0 var(--s4);
+}
+
+.first-reveal__numbers.is-visible {
+  animation: fadeIn 0.6s var(--ease-out) 0.9s both;
+  opacity: 1;
+}
+
+.first-reveal__cta {
+  opacity: 0;
+}
+
+.first-reveal__cta.is-visible {
+  animation: scaleIn 0.5s var(--ease-spring) 1.5s both;
+  opacity: 1;
+}
+
+.first-reveal__profile-link {
+  position: absolute;
+  bottom: calc(var(--safe-bottom) + 20px);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: rgba(212, 168, 67, 0.45);
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: var(--s2) var(--s6);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  animation: fadeIn 1s ease 2s both;
+}
+
+/* ── ═══════════════════════════════════════════════════════ ──
+   SCREEN 2: REVEAL (theatrical 10-second draw)
+── ═══════════════════════════════════════════════════════ ── */
+
+#screen-reveal {
+  background: radial-gradient(ellipse at 50% 30%, #3A6022 0%, #1C3610 65%);
+  gap: var(--s6);
+  padding: var(--safe-top) var(--s4) var(--safe-bottom);
+  justify-content: center;
+}
+
+.reveal__header {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 5px;
+  color: var(--gold);
+  text-transform: uppercase;
+  opacity: 0;
+  animation: fadeIn 0.4s var(--ease-out) 0.2s both;
+}
+
+/* Your numbers label hidden — unified grid shows all balls together */
+.reveal__your-label {
+  display: none;
+}
+
+/* Player numbers row — same size as draw balls */
+.reveal__your-numbers {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: nowrap;
+}
+
+/* Draw area — no card, no border, just open space */
+.reveal__draw-area {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: 0;
+  position: relative;
+}
+
+/* Remove the DRAW label pseudo-element */
+.reveal__draw-area::before {
+  display: none;
+}
+
+/* Divider between your numbers and draw */
+.reveal__divider {
+  width: 48px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+}
+
+.reveal__whisper {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.65);
+  text-align: center;
+  min-height: 32px;
+  padding: 0 var(--s6);
+  transition: all 0.4s var(--ease-out);
+}
+
+.reveal__progress {
+  display: flex;
+  gap: 8px;
+}
+
+.reveal__progress-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--bg4);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.reveal__progress-dot.is-hit {
+  background: var(--gold);
+  border-color: var(--gold);
+  box-shadow: 0 0 10px var(--gold-glow);
+}
+
+.reveal__progress-dot.is-miss {
+  background: var(--bg3);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* ── ═══════════════════════════════════════════════════════ ──
+   SCREEN 3: RESULT
+── ═══════════════════════════════════════════════════════ ── */
+
+#screen-result {
+  padding: 0 var(--s8);
+  gap: var(--s4);
+}
+
+#result-streak-area,
+#result-draw-area {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.result__particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.result__eye-wrap {
+  margin-bottom: var(--s2);
+}
+
+.result__tier-label {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 5px;
+  color: var(--gold);
+  text-transform: uppercase;
+  text-align: center;
+  width: 100%;
+}
+
+.result__score {
+  font-family: var(--font-serif);
+  font-size: 96px;
+  font-weight: 300;
+  color: var(--gold);
+  text-shadow: 0 0 60px var(--gold-glow);
+  line-height: 1;
+  animation: winScoreIn 0.6s var(--ease-spring) 0.2s both;
+}
+
+.result__score-sub {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 300;
+  color: var(--text2);
+  letter-spacing: 1px;
+}
+
+.result__oracle-msg {
+  font-family: var(--font-serif);
+  font-size: 19px;
+  font-style: italic;
+  color: var(--plat);
+  text-align: center;
+  line-height: 1.65;
+  padding: var(--s4) var(--s6);
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  width: calc(100% - 48px);
+}
+
+/* Streak banner — subtle, not heavy */
+.result__streak-banner {
+  width: calc(100% - 48px);
+  background: rgba(255, 255, 255, 0.10);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  border-radius: var(--r-xl);
+  padding: var(--s4) var(--s6);
+  text-align: center;
+}
+
+.result__streak-banner-top {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 4px;
+  color: var(--gold);
+  text-transform: uppercase;
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+.result__streak-banner-msg {
+  font-family: var(--font-serif);
+  font-size: 17px;
+  font-style: italic;
+  color: var(--plat-dim);
+  text-align: center;
+}
+
+/* Near miss — glass box matching streak banner */
+.result__near-miss-msg {
+  width: calc(100% - 48px);
+  text-align: center;
+  padding: var(--s4) var(--s6);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--r-xl);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.10);
+}
+
+.result__near-miss-msg p {
+  font-family: var(--font-serif);
+  font-size: 19px;
+  font-style: italic;
+  color: var(--plat-dim);
+  line-height: 1.7;
+  text-align: center;
+  padding: 0;
+}
+
+.result__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s4);
+  width: 100%;
+}
+
+.result__pick-link {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: var(--text3);
+  text-decoration: none;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: var(--s2) var(--s6);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Ritual invitation on result screen */
+.result__ritual-invite {
+  width: calc(100% - 48px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s4);
+  padding: var(--s4) var(--s6);
+  background: rgba(212, 168, 67, 0.04);
+  border: 1px solid rgba(212, 168, 67, 0.22);
+  border-radius: var(--r-xl);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.result__ritual-oracle-text {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-style: italic;
+  color: var(--plat-dim);
+  text-align: center;
+  line-height: 1.6;
+}
+
+.result__ritual-btn {
+  width: 100%;
+  padding: 16px 24px;
+  background: transparent;
+  border: 1px solid var(--gold);
+  border-radius: var(--r-lg);
+  color: var(--gold);
+  font-family: var(--font-serif);
+  font-size: 16px;
+  font-weight: 300;
+  letter-spacing: 1px;
+  cursor: pointer;
+  animation: revealBtnPulse 2.5s ease-in-out infinite;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: all 0.2s ease;
+}
+
+.result__ritual-btn:active {
+  background: var(--gold-dim);
+  transform: scale(0.98);
+}
+
+/* ── ═══════════════════════════════════════════════════════ ──
+   SCREEN 4: RITUAL
+── ═══════════════════════════════════════════════════════ ── */
+
+#screen-ritual {
+  background: radial-gradient(ellipse at 50% 20%, #1C3610 0%, #0a1608 70%);
+  overflow: hidden;
+}
+
+.ritual__top-bar {
+  position: absolute;
+  top: var(--safe-top);
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: var(--s4);
+  z-index: 10;
+}
+
+.ritual__close-btn {
+  position: absolute;
+  top: 0;
+  right: var(--s6);
+  width: 44px;
+  height: 44px;
+  background: none;
+  border: none;
+  color: var(--text3);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.ritual__progress-dots {
+  display: flex;
+  gap: 8px;
+  padding: var(--s2) 0;
+}
+
+.ritual__progress-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(212, 168, 67, 0.18);
+  transition: all 0.35s ease;
+}
+
+.ritual__progress-dot--active {
+  background: var(--gold);
+  box-shadow: 0 0 8px var(--gold-glow);
+  transform: scale(1.2);
+}
+
+.ritual__progress-dot--done {
+  background: rgba(212, 168, 67, 0.45);
+}
+
+.ritual__card-container {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.ritual-card {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s6);
+  padding: calc(var(--safe-top) + 72px) var(--s6) calc(var(--safe-bottom) + 20px);
+  transition: transform 0.42s var(--ease-smooth), opacity 0.38s ease;
+  will-change: transform, opacity;
+}
+
+/* Text-type cards: stay centered; visualViewport shift handles keyboard */
+.ritual-card--text {
+  justify-content: center;
+}
+
+.ritual-card--off-right {
+  transform: translateX(110%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.ritual-card--active {
+  transform: translateX(0);
+  opacity: 1;
+  pointer-events: all;
+}
+
+.ritual-card--off-left {
+  transform: translateX(-110%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.ritual__oracle-text {
+  font-family: var(--font-serif);
+  font-size: 28px;
+  font-weight: 300;
+  font-style: italic;
+  color: var(--plat);
+  text-align: center;
+  line-height: 1.55;
+  max-width: 300px;
+}
+
+.ritual__input-area {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s4);
+}
+
+/* ── ═══════════════════════════════════════════════════════ ──
+   SCREEN 5: SOUL PROFILE
+── ═══════════════════════════════════════════════════════ ── */
+
+#screen-soul-profile {
+  background: radial-gradient(ellipse at 50% 20%, #1C3610 0%, #0a1608 70%);
+  padding: calc(var(--safe-top) + var(--s8)) var(--s6) calc(var(--safe-bottom) + var(--s8));
+  gap: var(--s6);
+  justify-content: center;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.soul-profile__header {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  letter-spacing: 5px;
+  color: var(--gold);
+  text-transform: uppercase;
+  text-align: center;
+  animation: fadeIn 0.8s ease 0.3s both;
+}
+
+.soul-profile__orb-wrap {
+  animation: scaleIn 1s var(--ease-spring) 0.5s both;
+}
+
+.soul-profile__zodiac {
+  font-family: var(--font-serif);
+  font-size: 36px;
+  font-weight: 300;
+  font-style: italic;
+  color: var(--gold);
+  text-align: center;
+  text-shadow: 0 0 40px var(--gold-glow);
+  line-height: 1;
+  animation: slideUp 0.8s var(--ease-out) 0.8s both;
+}
+
+.soul-profile__stats {
+  display: flex;
+  gap: var(--s3);
+  justify-content: center;
+  animation: fadeIn 0.8s ease 1.1s both;
+}
+
+.soul-profile__stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg3);
+  border: var(--border-gold);
+  border-radius: var(--r-md);
+  padding: var(--s3) var(--s4);
+  min-width: 72px;
+}
+
+.soul-profile__stat-label {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--text3);
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.soul-profile__stat-value {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 300;
+  color: var(--plat);
+  text-align: center;
+}
+
+.soul-profile__personality {
+  font-family: var(--font-serif);
+  font-size: 17px;
+  font-style: italic;
+  color: var(--text2);
+  text-align: center;
+  line-height: 1.65;
+  padding: 0 var(--s4);
+  animation: fadeIn 0.8s ease 1.3s both;
+}
+
+.soul-profile__numbers-label {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  letter-spacing: 4px;
+  color: var(--text3);
+  text-transform: uppercase;
+  text-align: center;
+  animation: fadeIn 0.8s ease 1.5s both;
+}
+
+.soul-profile__numbers-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  animation: fadeIn 0.8s ease 1.7s both;
+}
+
+.soul-profile__begin-btn {
+  width: 100%;
+  padding: 22px;
+  margin-top: 24px;
+  background: var(--gold);
+  border: none;
+  border-radius: var(--r-lg);
+  color: #000;
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  cursor: pointer;
+  box-shadow: 0 4px 32px rgba(212, 168, 67, 0.35);
+  animation: scaleIn 0.6s var(--ease-spring) 2.1s both;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: transform 0.15s ease, box-shadow 0.3s ease;
+}
+
+.soul-profile__begin-btn:active {
+  transform: scale(0.97);
+  box-shadow: 0 2px 16px rgba(212, 168, 67, 0.20);
+}

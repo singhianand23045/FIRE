@@ -1,0 +1,17 @@
+{
+  "name": "fire-pwa",
+  "version": "1.0.0",
+  "description": "## What you need",
+  "main": "main.js",
+  "scripts": {
+    "build":  "node build.js",
+    "deploy": "node build.js && firebase deploy --only hosting:grhf-th-2",
+    "dev":    "npx serve . -l 3001"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "esbuild": "^0.27.4"
+  }
+}

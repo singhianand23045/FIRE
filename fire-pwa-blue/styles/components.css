@@ -1,0 +1,1224 @@
+/* ─────────────────────────────────────────────────────────────
+   FIRE PWA — Component Styles
+───────────────────────────────────────────────────────────── */
+
+/* ── Oracle Orb ───────────────────────────────────────────── */
+
+.oracle-eye {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.oracle-eye__orb {
+  display: block;
+  overflow: visible;
+}
+
+/* SVG element animations */
+.orb-ambient {
+  animation: orbGlow 3s ease-in-out infinite;
+}
+
+.orb-halo {
+  animation: orbGlow 3s ease-in-out 0.3s infinite;
+}
+
+.orb-sphere {
+  animation: breathe 4s ease-in-out infinite;
+}
+
+.orb-catchlight {
+  animation: breathe 4s ease-in-out infinite;
+}
+
+/* Size variants */
+.oracle-eye--xl .oracle-eye__orb {
+  width: 100px;
+  height: 100px;
+}
+
+.oracle-eye--md .oracle-eye__orb {
+  width: 72px;
+  height: 72px;
+}
+
+.oracle-eye--sm .oracle-eye__orb {
+  width: 48px;
+  height: 48px;
+}
+
+/* Win state — orb blazes */
+.oracle-eye--win .orb-sphere {
+  animation: breathe 0.9s ease-in-out infinite;
+}
+
+.oracle-eye--win .orb-ambient {
+  animation: orbGlow 0.7s ease-in-out infinite;
+}
+
+.oracle-eye--win .orb-halo {
+  animation: orbGlow 0.7s ease-in-out 0.1s infinite;
+}
+
+/* ── Number Ball ──────────────────────────────────────────── */
+
+.num-ball {
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-serif);
+  font-weight: 400;
+  transition: all 0.35s var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+/* Player's held numbers */
+.num-ball--player {
+  background: rgba(15, 28, 10, 0.6);
+  border: 1.5px solid var(--gold);
+  color: var(--gold);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.15),
+    inset 0 0 12px rgba(255, 255, 255, 0.05);
+}
+
+.num-ball--player.is-matched {
+  background: var(--gold-dim);
+  border: 2px solid var(--gold-bright);
+  color: var(--gold-bright);
+  box-shadow: var(--match-glow);
+  animation: numberGlow 0.5s var(--ease-out) both;
+}
+
+/* Drawn balls */
+.num-ball--draw {
+  background: rgba(10, 20, 8, 0.7);
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  color: var(--plat);
+  opacity: 0;
+  transform: translateY(-60px);
+}
+
+.num-ball--draw.is-dropped {
+  animation: ballDrop 0.55s var(--ease-spring) both;
+}
+
+.num-ball--draw.is-hit {
+  background: var(--gold-grad);
+  border: none;
+  color: #000;
+  font-weight: 600;
+  box-shadow: 0 0 40px var(--gold-glow);
+  animation: ballDrop 0.55s var(--ease-spring) both,
+    ballMatch 0.6s var(--ease-spring) 0.55s both;
+}
+
+.num-ball--draw.is-near-miss {
+  animation: ballDrop 0.55s var(--ease-spring) both,
+    ballNearMiss 0.6s ease 0.55s both;
+}
+
+/* Float animation for idle numbers */
+.num-ball--float {
+  animation: float 2.2s ease-in-out infinite;
+}
+
+/* Sizes — 6 balls fit in one row on iPhone 390px */
+.num-ball--xl {
+  width: 68px;
+  height: 68px;
+  font-size: 26px;
+}
+
+.num-ball--lg {
+  width: 52px;
+  height: 52px;
+  font-size: 21px;
+}
+
+.num-ball--md {
+  width: 44px;
+  height: 44px;
+  font-size: 18px;
+}
+
+.num-ball--sm {
+  width: 36px;
+  height: 36px;
+  font-size: 15px;
+}
+
+.num-ball--xs {
+  width: 28px;
+  height: 28px;
+  font-size: 12px;
+}
+
+/* ── Reveal Button (REVEAL MY FATE) ──────────────────────── */
+
+.reveal-btn {
+  position: relative;
+  align-self: stretch;
+  /* ← stretch to fill flex container */
+  margin: 0 24px;
+  /* ← 24px each side = 48px total */
+  padding: 22px 32px;
+  white-space: nowrap;
+  background: transparent;
+  border: 1px solid var(--gold);
+  border-radius: var(--r-lg);
+  color: var(--gold);
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 300;
+  letter-spacing: 1px;
+  cursor: pointer;
+  text-align: center;
+  box-shadow: 0 0 30px var(--gold-dim),
+    inset 0 0 20px rgba(255, 255, 255, 0.03);
+  transition: all 0.2s ease;
+  animation: revealBtnPulse 2.5s ease-in-out infinite;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.reveal-btn:active {
+  transform: scale(0.97);
+  box-shadow: 0 0 60px var(--gold-glow),
+    inset 0 0 30px rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.reveal-btn__glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 120%,
+      rgba(255, 255, 255, 0.12) 0%, transparent 70%);
+  animation: breathe 2.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.reveal-btn--disabled {
+  opacity: 0.4;
+  pointer-events: none;
+  animation: none;
+}
+
+/* ── Again Button (REVEAL AGAIN) ─────────────────────────── */
+
+.again-btn {
+  align-self: stretch;
+  margin: 0 24px;
+  padding: 22px 32px;
+  background: #ffffff;
+  border: none;
+  border-radius: var(--r-lg);
+  color: #1C3610;
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  cursor: pointer;
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.2);
+  transition: transform 0.15s ease, box-shadow 0.3s ease;
+  animation: revealBtnPulse 2.5s ease-in-out infinite;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.again-btn:active {
+  transform: scale(0.97);
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* ── Toast (Oracle whisper) ───────────────────────────────── */
+/* Pure text — no box, no border. Just the Oracle's voice.    */
+
+.toast-container {
+  position: fixed;
+  bottom: calc(var(--safe-bottom) + 72px);
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  padding: 0 var(--s10);
+}
+
+.toast {
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 300;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.75);
+  text-align: center;
+  line-height: 1.6;
+  text-shadow: 0 0 40px rgba(255, 255, 255, 0.5),
+    0 0 80px rgba(255, 255, 255, 0.2);
+  animation: toastIn 0.6s var(--ease-spring) both;
+  max-width: 320px;
+  width: 100%;
+}
+
+.toast--exit {
+  animation: toastOut 0.5s var(--ease-in) both;
+}
+
+/* ── Streak badge ─────────────────────────────────────────── */
+
+.streak-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  background: var(--fire-dim);
+  border: 1px solid rgba(255, 107, 26, 0.25);
+  border-radius: var(--r-full);
+  padding: 8px 16px;
+}
+
+.streak-badge__flame {
+  font-size: 20px;
+  animation: flamePulse 1.6s ease-in-out infinite;
+}
+
+.streak-badge__count {
+  font-family: var(--font-serif);
+  font-size: 26px;
+  font-weight: 300;
+  color: var(--fire);
+  line-height: 1;
+}
+
+.streak-badge__mult {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  color: var(--gold);
+  letter-spacing: 1px;
+}
+
+/* ── Confetti particle ────────────────────────────────────── */
+
+.confetti-particle {
+  position: absolute;
+  border-radius: 2px;
+  animation: confettiFall linear forwards;
+  pointer-events: none;
+}
+
+/* ── Ritual: DOB selects ──────────────────────────────────── */
+
+.ritual__dob-row {
+  display: flex;
+  gap: 0;
+  width: 100%;
+  justify-content: center;
+  background: var(--bg3);
+  border: var(--border-gold);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+
+.ritual__select {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--gold);
+  font-family: var(--font-serif);
+  font-size: 22px;
+  padding: 18px 4px;
+  text-align: center;
+  text-align-last: center;
+  -webkit-appearance: none;
+  appearance: none;
+  outline: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ritual__select:last-child {
+  border-right: none;
+}
+
+/* Remove unused size modifiers */
+.ritual__select--sm,
+.ritual__select--md {
+  flex: 1;
+}
+
+/* ── Ritual: Text input ───────────────────────────────────── */
+
+.ritual__text-input {
+  width: 100%;
+  background: var(--bg3);
+  border: var(--border-gold);
+  border-radius: var(--r-md);
+  color: var(--plat);
+  font-family: var(--font-serif);
+  font-size: 26px;
+  font-weight: 300;
+  padding: 18px 20px;
+  text-align: center;
+  outline: none;
+  caret-color: var(--gold);
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.ritual__text-input::placeholder {
+  color: var(--text3);
+  font-style: italic;
+}
+
+.ritual__text-input:focus {
+  border-color: rgba(255, 255, 255, 0.55);
+  background: var(--bg4);
+}
+
+.ritual__field-hint {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--text3);
+  text-align: center;
+  text-transform: uppercase;
+}
+
+/* ── Ritual: Tile grid (location, element) ────────────────── */
+
+.ritual__tile-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s3);
+  width: 100%;
+}
+
+.ritual__tile {
+  background: var(--bg3);
+  border: var(--border-gold);
+  border-radius: var(--r-md);
+  color: var(--text2);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 22px 12px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: all 0.18s ease;
+}
+
+.ritual__tile-icon {
+  font-size: 30px;
+  line-height: 1;
+}
+
+.ritual__tile:active,
+.ritual__tile--selected {
+  background: var(--gold-dim);
+  border-color: rgba(255, 255, 255, 0.55);
+  color: var(--gold);
+  box-shadow: 0 0 24px rgba(255, 255, 255, 0.12);
+}
+
+/* ── Ritual: Colour swatches ──────────────────────────────── */
+
+.ritual__colour-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--s3);
+  width: 100%;
+}
+
+.ritual__colour-swatch {
+  aspect-ratio: 1;
+  border-radius: var(--r-md);
+  cursor: pointer;
+  border: 2.5px solid transparent;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: transform 0.18s var(--ease-spring), border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.ritual__colour-swatch:active,
+.ritual__colour-swatch--selected {
+  border-color: rgba(255, 255, 255, 0.7);
+  transform: scale(1.1);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.25);
+}
+
+/* ── Ritual: Soul number stepper ──────────────────────────── */
+
+.ritual__stepper-hint {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: var(--text3);
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.ritual__stepper {
+  display: flex;
+  align-items: center;
+  gap: var(--s6);
+}
+
+.ritual__stepper-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--bg3);
+  border: var(--border-gold);
+  color: var(--gold);
+  font-size: 28px;
+  font-family: var(--font-serif);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: all 0.15s ease;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.ritual__stepper-btn:active {
+  background: var(--gold-dim);
+  transform: scale(0.91);
+}
+
+.ritual__stepper-val {
+  font-family: var(--font-serif);
+  font-size: 84px;
+  font-weight: 300;
+  color: var(--gold);
+  line-height: 1;
+  text-shadow: 0 0 40px var(--gold-glow);
+  min-width: 110px;
+  text-align: center;
+}
+
+/* ── Ritual: Continue + skip buttons ─────────────────────── */
+
+.ritual__continue-btn {
+  width: 100%;
+  padding: 20px;
+  background: transparent;
+  border: 1px solid var(--gold);
+  border-radius: var(--r-lg);
+  color: var(--gold);
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 300;
+  letter-spacing: 1px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: all 0.18s ease;
+}
+
+.ritual__continue-btn:active {
+  background: var(--gold-dim);
+  transform: scale(0.98);
+}
+
+.ritual__skip-link {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: var(--text3);
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: var(--s2) var(--s6);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PHASE 3 — JACKPOT BANNER
+═══════════════════════════════════════════════════════════ */
+
+@keyframes bannerAura {
+  0%, 100% { box-shadow: 0 1px 0 rgba(255, 255, 255, 0.12), 0 4px 24px rgba(255, 255, 255, 0.04); }
+  50%       { box-shadow: 0 1px 0 rgba(255, 255, 255, 0.25), 0 4px 32px rgba(255, 255, 255, 0.12); }
+}
+
+#jackpot-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  padding-top: var(--safe-top);
+  background: linear-gradient(180deg, rgba(10, 22, 8, 0.98) 0%, rgba(5, 14, 3, 0.95) 100%);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  animation: bannerAura 3s ease-in-out infinite;
+  height: calc(var(--safe-top) + var(--jackpot-bar-height));
+  overflow: hidden;
+}
+
+.jackpot-banner__inner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--s5);
+  height: var(--jackpot-bar-height);
+}
+
+/* LIVE indicator — absolute left */
+.jackpot-banner__live {
+  position: absolute;
+  left: var(--s5);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.jackpot-banner__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ff3b30;
+  box-shadow: 0 0 6px rgba(255, 59, 48, 0.8);
+  flex-shrink: 0;
+  animation: livePulse 1.5s ease-in-out infinite;
+}
+
+@keyframes livePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.7); }
+}
+
+.jackpot-banner__live-text {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: rgba(255, 100, 80, 0.85);
+  text-transform: uppercase;
+}
+
+/* Center — JACKPOT label + amount */
+.jackpot-banner__center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+.jackpot-banner__label {
+  font-family: var(--font-sans);
+  font-size: 8px;
+  letter-spacing: 5px;
+  color: var(--text3);
+  text-transform: uppercase;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+/* Sparkle — absolute right */
+.jackpot-banner__right {
+  position: absolute;
+  right: var(--s5);
+}
+
+.jackpot-banner__sparkle {
+  font-size: 12px;
+  color: var(--gold);
+  opacity: 0.5;
+  animation: breathe 2.5s ease-in-out infinite;
+}
+
+.jackpot-banner__amount {
+  font-family: var(--font-serif);
+  font-size: 28px;
+  font-weight: 300;
+  color: var(--gold);
+  letter-spacing: 1px;
+  line-height: 1;
+  transition: color 0.3s ease;
+}
+
+/* Digit roll on value change */
+@keyframes digitRoll {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  40% {
+    transform: translateY(-6px);
+    opacity: 0.4;
+  }
+
+  60% {
+    transform: translateY(6px);
+    opacity: 0.4;
+  }
+
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.jackpot-amount--rolling {
+  animation: digitRoll 0.4s var(--ease-spring) both;
+}
+
+/* Jackpot amount — shimmer + breathe combo */
+@keyframes jackpotShimmer {
+  0%   { background-position: -300% center; }
+  100% { background-position: 300% center; }
+}
+
+@keyframes jackpotBreathe {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.4)); transform: scale(1); }
+  50%       { filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.85)); transform: scale(1.025); }
+}
+
+.jackpot-banner__amount {
+  background: linear-gradient(90deg,
+    rgba(255, 255, 255, 0.7) 0%,
+    var(--gold) 25%,
+    rgba(255, 255, 255, 1) 45%,
+    rgba(255, 255, 255, 1) 50%,
+    rgba(255, 255, 255, 1) 55%,
+    var(--gold) 75%,
+    rgba(255, 255, 255, 0.7) 100%);
+  background-size: 300% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: jackpotShimmer 3s linear infinite, jackpotBreathe 2.5s ease-in-out infinite;
+}
+
+/* Glow line at bottom of banner */
+@keyframes glowLinePulse {
+  0%, 100% { opacity: 0.25; transform: scaleX(0.5); }
+  50%       { opacity: 0.8;  transform: scaleX(1); }
+}
+
+.jackpot-banner__glow-line {
+  position: absolute;
+  bottom: 0;
+  left: 15%;
+  right: 15%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), rgba(255, 255, 255, 0.8), var(--gold), transparent);
+  animation: glowLinePulse 2.5s ease-in-out infinite;
+  transform-origin: center;
+}
+
+/* Up indicator */
+.jackpot-amount--up::after {
+  content: ' ↑';
+  font-size: 14px;
+  color: var(--gold);
+  -webkit-text-fill-color: var(--gold);
+  animation: fadeIn 0.3s ease both, fadeOut 0.3s ease 1.2s both;
+}
+
+@keyframes fadeOut {
+  to { opacity: 0; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PHASE 3 — USER AVATAR BUTTON
+═══════════════════════════════════════════════════════════ */
+
+.user-avatar-btn {
+  position: fixed;
+  top: calc(var(--safe-top) + var(--jackpot-bar-height) + var(--s3));
+  right: var(--s5);
+  z-index: 999;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(10, 20, 8, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow: 0 0 16px rgba(255, 255, 255, 0.12), inset 0 0 8px rgba(255, 255, 255, 0.04);
+  font-size: 20px;
+  color: var(--gold);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.user-avatar-btn:active {
+  transform: scale(0.92);
+  box-shadow: 0 0 16px var(--gold-glow);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PHASE 3 — WALLET PANEL
+═══════════════════════════════════════════════════════════ */
+
+.wallet-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  z-index: 1001;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.wallet-overlay--visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.wallet-panel {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1002;
+  background: var(--bg);
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
+  max-height: 82vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: var(--s3) var(--s6) calc(var(--safe-bottom) + var(--s8));
+  transform: translateY(100%);
+  transition: transform 0.38s var(--ease-smooth);
+  box-shadow: 0 -4px 40px rgba(0, 0, 0, 0.6);
+}
+
+@keyframes panelSlideUp {
+  from {
+    transform: translateY(100%);
+  }
+
+  to {
+    transform: translateY(0);
+  }
+}
+
+.wallet-panel--visible {
+  transform: translateY(0);
+}
+
+.wallet-panel--hidden {
+  transform: translateY(100%);
+}
+
+.wallet-panel__handle {
+  width: 36px;
+  height: 4px;
+  background: var(--text3);
+  border-radius: var(--r-full);
+  margin: 0 auto var(--s5);
+  opacity: 0.4;
+}
+
+.wallet-panel__header {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  margin-bottom: var(--s5);
+}
+
+.wallet-panel__avatar-icon {
+  font-size: 28px;
+}
+
+.wallet-panel__name {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 300;
+  color: var(--plat);
+}
+
+.wallet-panel__stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s3);
+  margin-bottom: var(--s5);
+}
+
+.wallet-stat {
+  background: var(--bg3);
+  border: var(--border-gold);
+  border-radius: var(--r-md);
+  padding: var(--s4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+  align-items: center;
+}
+
+.wallet-stat__label {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--text3);
+  text-transform: uppercase;
+}
+
+.wallet-stat__value {
+  font-family: var(--font-serif);
+  font-size: 32px;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.wallet-stat__value--entries {
+  color: var(--gold);
+}
+
+.wallet-stat__value--money {
+  color: var(--plat);
+}
+
+.wallet-panel__divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: var(--s4) 0;
+}
+
+.wallet-panel__soul-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--s3) 0;
+  font-family: var(--font-serif);
+  font-size: 17px;
+  color: var(--plat);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.wallet-panel__section-header {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  letter-spacing: 4px;
+  color: var(--text3);
+  text-transform: uppercase;
+  margin-bottom: var(--s3);
+}
+
+/* Check-in streak dots */
+.wallet-panel__checkin {
+  margin-bottom: var(--s4);
+}
+
+.wallet-checkin__dots {
+  display: flex;
+  gap: var(--s2);
+  margin-bottom: var(--s2);
+}
+
+.wallet-checkin__dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.wallet-checkin__dot--filled {
+  background: var(--gold);
+  border-color: var(--gold);
+  box-shadow: 0 0 8px var(--gold-glow);
+}
+
+.wallet-checkin__label {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  color: var(--text3);
+  letter-spacing: 1px;
+}
+
+.wallet-panel__hattrick {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--text2);
+  margin-bottom: var(--s4);
+}
+
+/* Ledger rows — 3-column grid: DESC | AMOUNT | TIME */
+.wallet-ledger__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: center;
+  gap: var(--s2);
+  padding: var(--s2) 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.wallet-ledger__row--header .wallet-ledger__col {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--text3);
+  text-transform: uppercase;
+}
+
+.wallet-ledger__col {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wallet-ledger__col--desc {
+  color: var(--text2);
+}
+
+.wallet-ledger__col--amount {
+  text-align: center;
+}
+
+.wallet-ledger__col--time {
+  font-size: 10px;
+  color: var(--text3);
+  text-align: right;
+}
+
+.wallet-ledger__val--earn {
+  color: #4ade80;
+  font-weight: 500;
+}
+
+.wallet-ledger__val--spend {
+  color: #f87171;
+  font-weight: 500;
+}
+
+.wallet-ledger__empty {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--text3);
+  font-style: italic;
+  padding: var(--s3) 0;
+}
+
+.wallet-panel__encash-btn {
+  margin-top: var(--s5);
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   PHASE 3 — DRAW PROGRESS + GAME SUMMARY
+═══════════════════════════════════════════════════════════ */
+
+.draw-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2);
+  padding: var(--s3) 0;
+}
+
+.draw-progress__dots {
+  display: flex;
+  gap: var(--s2);
+}
+
+.draw-progress__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  transition: all 0.35s ease;
+}
+
+.draw-progress__dot--done {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.draw-progress__dot--active {
+  background: var(--gold);
+  box-shadow: 0 0 8px var(--gold-glow);
+  transform: scale(1.25);
+}
+
+.draw-progress__label {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  letter-spacing: 4px;
+  color: var(--text3);
+  text-transform: uppercase;
+}
+
+.draw-progress__near-miss {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  font-style: italic;
+  color: var(--text2);
+  text-align: center;
+  padding: 0 var(--s4);
+  line-height: 1.5;
+}
+
+/* Game summary card */
+.game-summary {
+  width: calc(100% - 48px);
+  background: var(--bg3);
+  border: var(--border-gold);
+  border-radius: var(--r-xl);
+  padding: var(--s5) var(--s6);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Every row is a 4-column grid: # | MATCH | ENTRIES | PRIZE */
+.game-summary__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  align-items: center;
+  padding: var(--s2) 0;
+  gap: 0;
+}
+
+/* Header row */
+.game-summary__row--header .game-summary__col {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--text3);
+  text-transform: uppercase;
+}
+
+/* All cells share base style */
+.game-summary__col {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--text2);
+  text-align: center;
+}
+
+/* First col (#, ∑) left-aligned */
+.game-summary__col--draw {
+  text-align: left;
+  color: var(--text3);
+}
+
+/* Match col */
+.game-summary__col--match {
+  text-align: center;
+}
+
+/* Entries earned */
+.game-summary__col--earn {
+  color: #4ade80;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* Money earned */
+.game-summary__col--money {
+  color: var(--gold);
+  font-weight: 500;
+  text-align: right;
+}
+
+/* Empty dash cells */
+.game-summary__col--blank {
+  color: var(--text3);
+  text-align: center;
+}
+
+/* Last col (prize) right-aligned */
+.game-summary__col--entries-head {
+  text-align: center;
+}
+
+.game-summary__col--prize-head {
+  text-align: right;
+}
+
+.game-summary__divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.2);
+  margin: var(--s2) 0;
+}
+
+/* Game summary hidden state */
+.game-summary--hidden {
+  display: none;
+}
+
+/* Unused legacy selectors kept for safety */
+.game-summary__total-entries,
+.game-summary__total-money {
+  color: var(--gold);
+}
+
+/* Game end — celebration + collapsible summary */
+.game-end {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s3);
+}
+
+.game-end__celeb {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 300;
+  color: var(--gold);
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+.game-end__toggle {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--text3);
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: var(--s2) var(--s4);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--r-full);
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.game-end__toggle:active {
+  color: var(--gold);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* First reveal — no entries message */
+.first-reveal__no-entries {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--text3);
+  text-align: center;
+  text-transform: uppercase;
+  margin-top: var(--s3);
+  animation: fadeIn 0.5s ease both;
+}

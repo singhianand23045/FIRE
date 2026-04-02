@@ -1,0 +1,12 @@
+{
+  "projects": {
+    "default": "grhf-d2b67"
+  },
+  "targets": {
+    "grhf-d2b67": {
+      "hosting": {
+        "grhf-th-2": ["grhf-th-2"]
+      }
+    }
+  }
+}

@@ -1,0 +1,234 @@
+/* ─────────────────────────────────────────────────────────────
+   FIRE PWA — Animations
+   All @keyframes in one file. Applied via utility classes
+   or component-specific selectors.
+───────────────────────────────────────────────────────────── */
+
+/* ── Presence ─────────────────────────────────────────────── */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(32px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-32px); opacity: 0; }
+  to   { transform: translateY(0);     opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.88); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+
+/* ── Oracle Eye ───────────────────────────────────────────── */
+
+@keyframes eyeOpen {
+  0%   { transform: scaleY(0.02); opacity: 0.3; }
+  60%  { transform: scaleY(1.08); }
+  80%  { transform: scaleY(0.96); }
+  100% { transform: scaleY(1);    opacity: 1; }
+}
+
+@keyframes eyePulse {
+  0%, 100% {
+    box-shadow: 0 0 20px var(--gold-glow),
+                inset 0 0 10px rgba(212, 168, 67, 0.05);
+  }
+  50% {
+    box-shadow: 0 0 50px var(--gold-glow),
+                0 0 80px rgba(212, 168, 67, 0.15),
+                inset 0 0 30px rgba(212, 168, 67, 0.1);
+  }
+}
+
+@keyframes irisGlow {
+  from { box-shadow: 0 0 10px var(--gold); }
+  to   { box-shadow: 0 0 30px #fff, 0 0 60px var(--gold); }
+}
+
+@keyframes pupilFloat {
+  0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+  50%       { transform: translate(-50%, -50%) translateY(-2px); }
+}
+
+/* ── Ball Drop ────────────────────────────────────────────── */
+
+@keyframes ballDrop {
+  0%   { transform: translateY(-80px) scale(0.8); opacity: 0; }
+  60%  { transform: translateY(6px)   scale(1.05); opacity: 1; }
+  80%  { transform: translateY(-3px)  scale(0.98); }
+  100% { transform: translateY(0)     scale(1);    opacity: 1; }
+}
+
+@keyframes ballMatch {
+  0%   { transform: scale(1);    box-shadow: 0 0 0 transparent; }
+  30%  { transform: scale(1.2);  box-shadow: var(--match-glow); }
+  60%  { transform: scale(1.05); }
+  100% { transform: scale(1);    box-shadow: var(--match-glow); }
+}
+
+@keyframes ballNearMiss {
+  0%   { transform: translateX(0);   }
+  15%  { transform: translateX(-8px);}
+  30%  { transform: translateX(6px); }
+  45%  { transform: translateX(-4px);}
+  60%  { transform: translateX(3px); }
+  80%  { transform: translateX(-1px);}
+  100% { transform: translateX(0);   }
+}
+
+@keyframes numberGlow {
+  0%   { background: var(--bg3);     border-color: var(--gold); color: var(--gold); }
+  50%  { background: rgba(212,168,67,0.25); border-color: var(--gold-bright); }
+  100% { background: var(--gold-dim); border-color: var(--gold); color: var(--gold); }
+}
+
+/* ── Tap Feedback ─────────────────────────────────────────── */
+
+@keyframes tapPop {
+  0%   { transform: scale(1);    }
+  35%  { transform: scale(0.94); }
+  65%  { transform: scale(1.06); }
+  100% { transform: scale(1);    }
+}
+
+@keyframes revealBtnPulse {
+  0%, 100% {
+    box-shadow: 0 0 20px var(--gold-dim),
+                0 0 0 0 rgba(212, 168, 67, 0);
+  }
+  50% {
+    box-shadow: 0 0 40px var(--gold-glow),
+                0 0 0 8px rgba(212, 168, 67, 0.05);
+  }
+}
+
+/* ── Win Celebration ──────────────────────────────────────── */
+
+@keyframes confettiFall {
+  0% {
+    transform: translateY(-20px) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  85% { opacity: 1; }
+  100% {
+    transform: translateY(110vh) rotate(720deg) scale(0.5);
+    opacity: 0;
+  }
+}
+
+@keyframes winFlash {
+  0%   { background: rgba(212, 168, 67, 0);    }
+  20%  { background: rgba(212, 168, 67, 0.12); }
+  100% { background: rgba(212, 168, 67, 0);    }
+}
+
+@keyframes winScoreIn {
+  0%   { transform: scale(0.5) translateY(20px); opacity: 0; }
+  60%  { transform: scale(1.1) translateY(-4px); }
+  80%  { transform: scale(0.97); }
+  100% { transform: scale(1) translateY(0);      opacity: 1; }
+}
+
+/* ── Streak ───────────────────────────────────────────────── */
+
+@keyframes flamePulse {
+  0%, 100% { transform: scale(1);    filter: brightness(1); }
+  50%       { transform: scale(1.1); filter: brightness(1.25); }
+}
+
+@keyframes streakIgnite {
+  0%   { transform: scale(0); opacity: 0; }
+  50%  { transform: scale(1.3);           }
+  75%  { transform: scale(0.9);           }
+  100% { transform: scale(1);  opacity: 1; }
+}
+
+/* ── Screen transitions ───────────────────────────────────── */
+
+@keyframes screenEnter {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Ambient / Idle ───────────────────────────────────────── */
+
+@keyframes float {
+  0%, 100% { transform: translateY(0);    }
+  50%       { transform: translateY(-6px); }
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50%       { opacity: 1;   transform: scale(1.03); }
+}
+
+@keyframes orbGlow {
+  0%, 100% { opacity: 0.7; }
+  50%       { opacity: 1;   }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 0.35; }
+  50%       { opacity: 0.9; }
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+@keyframes toastIn {
+  0%   { transform: translateY(24px) scale(0.94); opacity: 0; }
+  60%  { transform: translateY(-4px) scale(1.02); opacity: 1; }
+  100% { transform: translateY(0)    scale(1);    opacity: 1; }
+}
+
+@keyframes toastOut {
+  0%   { transform: translateY(0)  scale(1);    opacity: 1; }
+  100% { transform: translateY(12px) scale(0.96); opacity: 0; }
+}
+
+/* ── Utility classes ──────────────────────────────────────── */
+
+.anim-fade-in   { animation: fadeIn    var(--dur-slow) var(--ease-out) both; }
+.anim-slide-up  { animation: slideUp   var(--dur-slow) var(--ease-out) both; }
+.anim-scale-in  { animation: scaleIn   var(--dur-slow) var(--ease-spring) both; }
+.anim-tap-pop   { animation: tapPop    var(--dur-base) var(--ease-spring); }
+.anim-float     { animation: float     3s ease-in-out infinite; }
+.anim-breathe   { animation: breathe   2.5s ease-in-out infinite; }
+.anim-blink     { animation: blink     1.8s ease-in-out infinite; }
+.anim-flame     { animation: flamePulse 1.6s ease-in-out infinite; }
+
+/* Staggered delays for list items */
+.delay-1 { animation-delay: 0.1s; }
+.delay-2 { animation-delay: 0.2s; }
+.delay-3 { animation-delay: 0.3s; }
+.delay-4 { animation-delay: 0.4s; }
+.delay-5 { animation-delay: 0.5s; }
+.delay-6 { animation-delay: 0.6s; }
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

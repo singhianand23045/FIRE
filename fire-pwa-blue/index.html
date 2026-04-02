@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+
+  <!-- ── Viewport: iPhone, no zoom, respects Dynamic Island ── -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,
+                 user-scalable=no, viewport-fit=cover">
+
+  <title>FIRE — Oracle Lottery</title>
+  <meta name="description" content="A personalized mystical companion that picks your numbers.">
+
+  <!-- ── PWA / iOS home screen ────────────────────────────── -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="FIRE">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#000000">
+  <meta name="format-detection" content="telephone=no">
+
+  <!-- ── Apple touch icons (all sizes iOS uses) ───────────── -->
+  <link rel="apple-touch-icon" href="/assets/icons/icon-152.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/assets/icons/icon-72.png">
+  <link rel="apple-touch-icon" sizes="96x96" href="/assets/icons/icon-96.png">
+  <link rel="apple-touch-icon" sizes="128x128" href="/assets/icons/icon-128.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/assets/icons/icon-144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/assets/icons/icon-152.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="/assets/icons/icon-192.png">
+
+  <!-- ── Apple splash screens (iPhone 14 / 15 sizes) ─────── -->
+  <!-- Generated in Phase 5 when splash screen assets are added -->
+
+  <!-- ── PWA Manifest ─────────────────────────────────────── -->
+  <link rel="manifest" href="/manifest.json">
+
+  <!-- ── Favicon ──────────────────────────────────────────── -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/icon-96.png">
+
+  <!-- ── Fonts: self-hosted for offline + performance ─────── -->
+  <!-- Cormorant Garamond + Inter loaded via CSS @font-face   -->
+  <!-- For Phase 1 we use Google Fonts with crossorigin       -->
+  <!-- <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> -->
+  <!-- <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet"> -->
+
+  <!-- ── Styles ───────────────────────────────────────────── -->
+  <link rel="stylesheet" href="/styles/tokens.css">
+  <link rel="stylesheet" href="/styles/animations.css">
+  <link rel="stylesheet" href="/styles/screens.css">
+  <link rel="stylesheet" href="/styles/components.css">
+
+  <style>
+    /* ── Global reset ───────────────────────────────────── */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html {
+      height: 100%;
+      height: -webkit-fill-available;
+      /* Prevent iOS bounce at the root */
+      overscroll-behavior: none;
+    }
+
+    body {
+      height: 100%;
+      height: -webkit-fill-available;
+      background: #1C3610;
+      color: var(--text);
+      font-family: var(--font-sans);
+      overflow: hidden;
+      /* Disable iOS text size adjustment */
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+      /* Prevent selection during gameplay */
+      -webkit-user-select: none;
+      user-select: none;
+      /* Smooth scrolling in any scroll containers */
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: none;
+    }
+
+    /* ── App root ───────────────────────────────────────── */
+    #app {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      background: #1C3610;
+    }
+
+    /* ── Loading screen (before JS loads) ──────────────── */
+    #loading {
+      position: fixed;
+      inset: 0;
+      background: #1C3610;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.4s ease;
+    }
+
+    #loading.is-hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .loading-eye {
+      width: 64px;
+      height: 38px;
+      border: 1.5px solid rgba(255, 255, 255, 0.5);
+      border-radius: 50%;
+      animation: eyePulse 2s ease-in-out infinite;
+    }
+
+    /* ── No-script fallback ─────────────────────────────── */
+    noscript {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #1C3610;
+      color: var(--gold);
+      font-family: serif;
+      font-size: 18px;
+      font-style: italic;
+      text-align: center;
+      padding: 40px;
+      z-index: 99999;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- ── Loading screen ─────────────────────────────────── -->
+  <div id="loading" role="progressbar" aria-label="Loading FIRE">
+    <!-- <div class="loading-eye"></div> -->
+  </div>
+
+  <!-- ── App root ───────────────────────────────────────── -->
+  <div id="app" role="main">
+
+    <!-- ── SCREEN 0: Splash ──────────────────────────── -->
+    <section id="screen-splash" class="screen" role="region" aria-label="FIRE — Splash" aria-live="polite">
+    </section>
+
+    <!-- ── SCREEN 1: First Reveal ────────────────────── -->
+    <section id="screen-first-reveal" class="screen" role="region" aria-label="Your Numbers">
+    </section>
+
+    <!-- ── SCREEN 2: Reveal (Draw) ───────────────────── -->
+    <section id="screen-reveal" class="screen" role="region" aria-label="Drawing Numbers" aria-live="assertive">
+    </section>
+
+    <!-- ── SCREEN 3: Result ──────────────────────────── -->
+    <section id="screen-result" class="screen" role="region" aria-label="Your Result" aria-live="polite">
+    </section>
+
+    <!-- ── SCREENS 4–13: Phase 2+ (empty until built) ── -->
+    <section id="screen-ritual" class="screen" role="region" aria-label="The Ritual"></section>
+    <section id="screen-soul-profile" class="screen" role="region" aria-label="Soul Profile"></section>
+    <section id="screen-home" class="screen" role="region" aria-label="Home"></section>
+    <section id="screen-play" class="screen" role="region" aria-label="Play"></section>
+    <section id="screen-diary" class="screen" role="region" aria-label="Oracle Diary"></section>
+    <section id="screen-dna" class="screen" role="region" aria-label="Number DNA"></section>
+    <section id="screen-fortune-card" class="screen" role="region" aria-label="Fortune Card"></section>
+    <section id="screen-leaderboard" class="screen" role="region" aria-label="Leaderboard"></section>
+    <section id="screen-crews" class="screen" role="region" aria-label="Crews"></section>
+    <section id="screen-settings" class="screen" role="region" aria-label="Settings"></section>
+
+  </div>
+
+  <!-- ── No JavaScript fallback ─────────────────────────── -->
+  <noscript>
+    "The Oracle requires a modern browser.<br>Enable JavaScript to receive your fortune."
+  </noscript>
+
+  <!-- ── Bootstrap ────────────────────────────────────────── -->
+  <script type="module">
+    // ── Import all modules ───────────────────────────────
+    import { initAnalytics } from '/core/analytics.js';
+    import { getDeviceId, isFirstLaunch, markFirstLaunch } from '/core/device.js';
+    import { loadState } from '/core/state.js';
+    import { initRouter, goto } from '/core/router.js';
+    import { initFirebase, heartbeat } from '/core/firebase.js';
+
+    import { initSplash } from '/screens/splash.js';
+    import { initFirstReveal } from '/screens/first-reveal.js';
+    import { initReveal } from '/screens/reveal.js';
+    import { initResult } from '/screens/result.js';
+    import { initRitual } from '/screens/ritual.js';
+    import { initSoulProfile } from '/screens/soul-profile.js';
+    // devmode is self-initialising via attachDevTrigger — no explicit init needed
+
+    import { evt_firstOpen, evt_appOpen } from '/core/analytics.js';
+    import { initJackpotBanner } from '/components/jackpot-banner.js';
+    import { initUserAvatar } from '/components/user-avatar.js';
+    import { processCheckIn } from '/engine/streak.js';
+
+    // ── Boot sequence ────────────────────────────────────
+    async function boot() {
+      // 1. Device ID + state
+      getDeviceId();
+      const state = loadState();
+
+      // 2. Analytics
+      initAnalytics();
+
+      // 3. Firebase — wait up to 3s for auth before proceeding
+      await Promise.race([
+        initFirebase(),
+        new Promise(r => setTimeout(r, 3000)),
+      ]).catch(() => {});
+
+      // 4. Fire events
+      if (isFirstLaunch()) {
+        markFirstLaunch();
+        evt_firstOpen();
+      } else {
+        evt_appOpen(state.drawCount, state.checkInStreak);
+      }
+
+      // 5. Daily check-in streak
+      processCheckIn();
+
+      // 6. Register service worker
+      if ('serviceWorker' in navigator) {
+        try {
+          await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+        } catch (e) {
+          // Non-fatal — app works without SW
+          console.warn('[FIRE] SW registration failed:', e);
+        }
+      }
+
+      // 7. Init UI components (jackpot banner + user avatar)
+      initJackpotBanner();
+      initUserAvatar();
+
+      // 8. Init all screens (register them with the router)
+      initSplash();
+      initFirstReveal();
+      initReveal();
+      initResult();
+      initRitual();
+      initSoulProfile();
+
+      // 9. Init router + navigate to start screen
+      initRouter('splash');
+
+      // 10. Hide loading screen
+      const loading = document.getElementById('loading');
+      loading.classList.add('is-hidden');
+      setTimeout(() => loading.remove(), 500);
+    }
+
+    // ── Run ──────────────────────────────────────────────
+    boot().catch(err => {
+      console.error('[FIRE] Boot error:', err);
+      // Fail gracefully — remove loader so user sees something
+      const loading = document.getElementById('loading');
+      if (loading) loading.remove();
+    });
+  </script>
+
+</body>
+
+</html>
