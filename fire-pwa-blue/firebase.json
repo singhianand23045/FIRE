@@ -1,39 +1,10 @@
 {
   "hosting": {
-    "target": "grhf-th-2",
-    "public": "dist",
+    "public": ".",
     "ignore": [
       "firebase.json",
-      ".firebaserc",
-      ".git"
-    ],
-    "headers": [
-      {
-        "source": "/sw.js",
-        "headers": [
-          { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
-          { "key": "Pragma",        "value": "no-cache" }
-        ]
-      },
-      {
-        "source": "/index.html",
-        "headers": [
-          { "key": "Cache-Control", "value": "no-cache" }
-        ]
-      },
-      {
-        "source": "/manifest.json",
-        "headers": [
-          { "key": "Cache-Control", "value": "no-cache" }
-        ]
-      },
-      {
-        "source": "/config.js",
-        "headers": [
-          { "key": "Cache-Control", "value": "no-cache" }
-        ]
-      }
-    ],
-    "rewrites": []
+      "**/.*",
+      "**/node_modules/**"
+    ]
   }
 }
