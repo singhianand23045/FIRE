@@ -1,5 +1,12 @@
 {
   "projects": {
     "default": "fire-1353f"
+  },
+  "targets": {
+    "fire-1353f": {
+      "hosting": {
+        "fire-1353f": ["fire-1353f"]
+      }
+    }
   }
 }
