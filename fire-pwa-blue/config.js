@@ -4,18 +4,18 @@
 
 export const CONFIG = {
   // ── Analytics ──────────────────────────────────────────────
-  GA_MEASUREMENT_ID: 'G-6X7LSQCBKW',
+  GA_MEASUREMENT_ID: 'G-M9ZDYR0WFS',
   CLARITY_PROJECT_ID: 'vyaup7qul1',
 
   // ── Firebase ───────────────────────────────────────────────
   FIREBASE: {
-    apiKey: 'AIzaSyDSWSvwJkoH71S1m4hx-08FiuVsz9Zsqi4',
-    authDomain: 'grhf-d2b67.firebaseapp.com',
-    databaseURL: 'https://grhf-d2b67-default-rtdb.firebaseio.com',
-    projectId: 'grhf-d2b67',
-    storageBucket: 'grhf-d2b67.firebasestorage.app',
-    messagingSenderId: '395408555488',
-    appId: '1:395408555488:web:dfd631e10fd316dc097f85',
+    apiKey: 'AIzaSyALhVaQXUE-QU_ubt9gS9A5zSa1sO20P5U',
+    authDomain: 'fire-1353f.firebaseapp.com',
+    databaseURL: 'https://fire-1353f-default-rtdb.firebaseio.com',
+    projectId: 'fire-1353f',
+    storageBucket: 'fire-1353f.firebasestorage.app',
+    messagingSenderId: '623187298217',
+    appId: '1:623187298217:web:843fe56307d76f4185e6b8',
     vapidKey: '__FIREBASE_VAPID_KEY__',  // Phase 5 — push notifications
   },
 
