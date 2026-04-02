@@ -1,4 +1,4 @@
-# FIRE PWA — Code- Documentation
+# FIRE PWA BLUE — Code- Documentation
 
 A mystical lottery PWA where an "Oracle" picks numbers, users match them, and win entries/money. Built as a vanilla JS single-page app bundled with esbuild, deployed to Firebase Hosting.
 
