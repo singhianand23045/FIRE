@@ -68,4 +68,4 @@ cpSync(path.join(ROOT, 'styles'),  path.join(DIST, 'styles'),  { recursive: true
 cpSync(path.join(ROOT, 'assets'),  path.join(DIST, 'assets'),  { recursive: true });
 
 console.log('\n✓ Build complete → dist/');
-console.log('  Run: firebase deploy --only hosting:grhf-th-2');
+console.log('  Run: firebase deploy --only hosting:fire-1353f');
