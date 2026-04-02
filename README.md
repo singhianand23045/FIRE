@@ -585,8 +585,6 @@ All visual constants as CSS custom properties:
 --font-sans                 /* Inter */
 ```
 
-**Note:** In the original `fire-pwa`, `--gold` is actual gold (#D4A843) and `--bg` is black (#060504). The "blue" variant replaces gold with white and black with forest green. All other code is identical.
-
 ### `styles/animations.css` — Keyframes
 - `eyePulse`, `anim-float`, `fadeIn`, `slideUp`, `confettiFall`, etc.
 
@@ -653,18 +651,3 @@ All visual constants as CSS custom properties:
 | `DEBUG` | `true` | Console logging (set false for prod) |
 
 ---
-
-## Two App Variants
-
-There are two identical codebases with only cosmetic differences:
-
-| | `fire-pwa` (original) | `fire-pwa-blue` |
-|---|---|---|
-| **Theme** | Dark luxury (black + gold) | Forest (green + white) |
-| **Background** | `#060504` (near-black) | `#1C3610` (dark green) |
-| **Accent** | `#D4A843` (gold) | `#ffffff` (white) |
-| **SW cache** | `fire-v3.3.2` | `forest-v3.2.6` |
-| **Firebase target** | default | `grhf-th-2` |
-| **Icons** | Gold-themed | Green-themed |
-
-All game logic, screens, engines, and Firebase config are identical.
