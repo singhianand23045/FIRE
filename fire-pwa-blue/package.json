@@ -6,7 +6,7 @@
   "scripts": {
     "build":  "node build.js",
     "deploy": "node build.js && firebase deploy --only hosting:grhf-th-2",
-    "dev":    "npm run build && npx serve dist -l 3001"
+    "dev":    "npm run build && node start.js"
   },
   "keywords": [],
   "author": "",

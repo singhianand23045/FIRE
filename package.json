@@ -2,7 +2,7 @@
   "name": "fire-pwa-root",
   "private": true,
   "scripts": {
-    "dev": "cd fire-pwa-blue && npm run dev",
+    "dev": "cd fire-pwa-blue && npm run dev --",
     "build": "cd fire-pwa-blue && npm run build"
   },
   "dependencies": {
