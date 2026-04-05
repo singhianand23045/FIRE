@@ -63,5 +63,6 @@ To maintain the project's lightweight, zero-dependency philosophy, adhere to the
 ## Development Workflow
 
 - All source files reside in `fire-pwa-blue/`.
+- **Dev Server & Port Handling:** The Dyad platform automatically appends a `--port <random_port>` argument to `npm run dev` to wire up the live preview. Standard `serve` commands will crash because they attempt to parse `--port` as an extra file path. We resolve this using a custom `start.js` script that manually extracts the `--port` argument (or `process.env.PORT`) and correctly passes it via `npx serve dist -l <port>`. **Do not modify this setup or replace it with a direct `serve` command in `package.json`**.
 - Local development requires running a static server on the root or `dist` folder. If checking bundled changes, always run `node build.js` first.
 - Ensure that modifications do not break the boot sequence orchestrated in `main.js`.
