@@ -80,6 +80,28 @@
 
   --match-glow: 0 0 24px rgba(255, 255, 255, 0.65), 0 0 48px rgba(255, 255, 255, 0.25);
 
+  /* ── Draw Match Colours ──────────────────────────────── */
+  --color-d1: var(--gold);
+  --color-d1-bright: var(--gold-bright);
+  --color-d1-dim: var(--gold-dim);
+  --color-d1-glow: var(--gold-glow);
+  --color-d1-grad: var(--gold-grad);
+  --match-glow-d1: var(--match-glow);
+
+  --color-d2: #ff6b1a; /* Fiery orange */
+  --color-d2-bright: #ff8c4a;
+  --color-d2-dim: rgba(255, 107, 26, 0.15);
+  --color-d2-glow: rgba(255, 107, 26, 0.25);
+  --color-d2-grad: linear-gradient(135deg, rgba(255,140,74,0.9) 0%, #ff6b1a 50%, rgba(255,140,74,0.9) 100%);
+  --match-glow-d2: 0 0 24px rgba(255, 107, 26, 0.65), 0 0 48px rgba(255, 107, 26, 0.25);
+
+  --color-d3: #a855f7; /* Bright purple */
+  --color-d3-bright: #c084fc;
+  --color-d3-dim: rgba(168, 85, 247, 0.15);
+  --color-d3-glow: rgba(168, 85, 247, 0.25);
+  --color-d3-grad: linear-gradient(135deg, rgba(192,132,252,0.9) 0%, #a855f7 50%, rgba(192,132,252,0.9) 100%);
+  --match-glow-d3: 0 0 24px rgba(168, 85, 247, 0.65), 0 0 48px rgba(168, 85, 247, 0.25);
+
   /* ── Typography ──────────────────────────────────────── */
   --font-serif: 'Cormorant Garamond', 'Didot', Georgia, serif;
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;

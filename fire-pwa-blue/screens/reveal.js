@@ -64,6 +64,7 @@ export function initReveal() {
 
       const state = getState();
       const drawNum = state.drawCount + 1;
+      const gameDrawIdx = state.gameDrawIndex + 1; // 1, 2, or 3
       const numbers = state.currentNumbers;
       // Pick drawn numbers — dev override takes priority
       const forcedMatches = getDevForceMatches();
@@ -78,24 +79,63 @@ export function initReveal() {
       const score = scoreDraw(numbers, drawn, 0, 1);
       const nearMiss = computeNearMisses(numbers, drawn);
 
+      // Pre-compute historical match classes for player numbers
+      const historicalClasses = {};
+      numbers.forEach(n => {
+        historicalClasses[n] = [];
+        (state.gameResults || []).forEach((res, i) => {
+          const dIdx = i + 1;
+          if (res.matched.includes(n)) {
+            historicalClasses[n].push(`is-matched-d${dIdx}`);
+          }
+        });
+      });
+
       // ── Render player numbers ──────────────────────────
       playerNumsEl.innerHTML = '';
       numbers.forEach(n => {
         const b = document.createElement('div');
         b.className = 'num-ball num-ball--lg num-ball--player';
+        if (historicalClasses[n] && historicalClasses[n].length > 0) {
+          b.classList.add(...historicalClasses[n]);
+          b.classList.add('is-static');
+        }
         b.id = `pnum-${n}`;
         b.textContent = n;
         playerNumsEl.appendChild(b);
       });
 
-      // ── Render draw area (hidden balls) ───────────────
+      // ── Render draw area (stack of rows) ───────────────
       drawAreaEl.innerHTML = '';
+      
+      const activeDrawRow = document.createElement('div');
+      activeDrawRow.className = 'reveal__draw-row';
+      drawAreaEl.appendChild(activeDrawRow);
+
+      const reversedHistory = [...(state.gameResults || [])].reverse();
+      reversedHistory.forEach((res, i) => {
+        const dIdx = state.gameResults.length - i;
+        const row = document.createElement('div');
+        row.className = 'reveal__draw-row';
+        res.drawn.forEach(n => {
+          const b = document.createElement('div');
+          b.className = 'num-ball num-ball--lg num-ball--draw is-static';
+          if (res.matched.includes(n)) {
+            b.classList.add(`is-hit-d${dIdx}`);
+          }
+          b.textContent = n;
+          row.appendChild(b);
+        });
+        drawAreaEl.appendChild(row);
+      });
+
+      // ── Setup active draw balls ───────────────────────
       drawn.forEach((n, i) => {
         const b = document.createElement('div');
         b.className = 'num-ball num-ball--lg num-ball--draw';
         b.id = `dball-${i}`;
         b.textContent = n;
-        drawAreaEl.appendChild(b);
+        activeDrawRow.appendChild(b);
       });
 
       // ── Render progress dots ──────────────────────────
@@ -137,11 +177,14 @@ export function initReveal() {
           ballEl.classList.remove('num-ball--draw');
 
           if (isHit) {
-            ballEl.classList.add('num-ball--draw', 'is-dropped', 'is-hit');
+            ballEl.classList.add('num-ball--draw', 'is-dropped', `is-hit-d${gameDrawIdx}`);
             matchCountSoFar++;
 
             const pNum = document.getElementById(`pnum-${drawnNum}`);
-            if (pNum) setTimeout(() => pNum.classList.add('is-matched'), 200);
+            if (pNum) setTimeout(() => {
+              pNum.classList.remove('is-static');
+              pNum.classList.add(`is-matched-d${gameDrawIdx}`);
+            }, 200);
 
             haptic.success();
             playTone('match', matchCountSoFar); // pitch rises with each match

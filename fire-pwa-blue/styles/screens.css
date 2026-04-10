@@ -260,19 +260,25 @@
   flex-wrap: nowrap;
 }
 
-/* Draw area — no card, no border, just open space */
+/* Draw area — stack of rows */
 .reveal__draw-area {
   width: 100%;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
+  justify-content: flex-start;
+  gap: 16px;
   padding: 0;
   background: none;
   border: none;
   border-radius: 0;
   position: relative;
+}
+
+.reveal__draw-row {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
 }
 
 /* Remove the DRAW label pseudo-element */

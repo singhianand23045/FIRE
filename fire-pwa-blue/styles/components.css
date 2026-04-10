@@ -73,6 +73,7 @@
   transition: all 0.35s var(--ease-out);
   -webkit-tap-highlight-color: transparent;
   user-select: none;
+  z-index: 1; /* create stacking context for ::before borders */
 }
 
 /* Player's held numbers */
@@ -84,12 +85,98 @@
     inset 0 0 12px rgba(255, 255, 255, 0.05);
 }
 
-.num-ball--player.is-matched {
-  background: var(--gold-dim);
-  border: 2px solid var(--gold-bright);
-  color: var(--gold-bright);
-  box-shadow: var(--match-glow);
+.num-ball--player.is-matched,
+.num-ball--player.is-matched-d1 {
+  background: var(--color-d1-dim);
+  border: 2px solid var(--color-d1-bright);
+  color: var(--color-d1-bright);
+  box-shadow: var(--match-glow-d1);
   animation: numberGlow 0.5s var(--ease-out) both;
+}
+
+.num-ball--player.is-matched-d2 {
+  background: var(--color-d2-dim);
+  border: 2px solid var(--color-d2-bright);
+  color: var(--color-d2-bright);
+  box-shadow: var(--match-glow-d2);
+  animation: numberGlow 0.5s var(--ease-out) both;
+}
+
+.num-ball--player.is-matched-d3 {
+  background: var(--color-d3-dim);
+  border: 2px solid var(--color-d3-bright);
+  color: var(--color-d3-bright);
+  box-shadow: var(--match-glow-d3);
+  animation: numberGlow 0.5s var(--ease-out) both;
+}
+
+/* Overlapping matches for player numbers */
+.num-ball--player.is-matched-d1.is-matched-d2 {
+  background: linear-gradient(135deg, var(--color-d1-dim) 0%, var(--color-d2-dim) 100%);
+  border-color: transparent;
+  background-clip: padding-box;
+  position: relative;
+  color: var(--gold);
+  box-shadow: var(--match-glow-d1), var(--match-glow-d2);
+}
+.num-ball--player.is-matched-d1.is-matched-d2::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-d1-bright) 0%, var(--color-d2-bright) 100%);
+  z-index: -1;
+}
+
+.num-ball--player.is-matched-d1.is-matched-d3 {
+  background: linear-gradient(135deg, var(--color-d1-dim) 0%, var(--color-d3-dim) 100%);
+  border-color: transparent;
+  background-clip: padding-box;
+  position: relative;
+  color: var(--gold);
+  box-shadow: var(--match-glow-d1), var(--match-glow-d3);
+}
+.num-ball--player.is-matched-d1.is-matched-d3::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-d1-bright) 0%, var(--color-d3-bright) 100%);
+  z-index: -1;
+}
+
+.num-ball--player.is-matched-d2.is-matched-d3 {
+  background: linear-gradient(135deg, var(--color-d2-dim) 0%, var(--color-d3-dim) 100%);
+  border-color: transparent;
+  background-clip: padding-box;
+  position: relative;
+  color: var(--gold);
+  box-shadow: var(--match-glow-d2), var(--match-glow-d3);
+}
+.num-ball--player.is-matched-d2.is-matched-d3::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-d2-bright) 0%, var(--color-d3-bright) 100%);
+  z-index: -1;
+}
+
+.num-ball--player.is-matched-d1.is-matched-d2.is-matched-d3 {
+  background: linear-gradient(135deg, var(--color-d1-dim) 0%, var(--color-d2-dim) 50%, var(--color-d3-dim) 100%);
+  border-color: transparent;
+  background-clip: padding-box;
+  position: relative;
+  color: var(--gold);
+  box-shadow: var(--match-glow-d1), var(--match-glow-d2), var(--match-glow-d3);
+}
+.num-ball--player.is-matched-d1.is-matched-d2.is-matched-d3::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-d1-bright) 0%, var(--color-d2-bright) 50%, var(--color-d3-bright) 100%);
+  z-index: -1;
 }
 
 /* Drawn balls */
@@ -105,12 +192,39 @@
   animation: ballDrop 0.55s var(--ease-spring) both;
 }
 
-.num-ball--draw.is-hit {
-  background: var(--gold-grad);
+.num-ball--draw.is-static {
+  animation: none !important;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.num-ball--draw.is-hit,
+.num-ball--draw.is-hit-d1 {
+  background: var(--color-d1-grad);
   border: none;
   color: #000;
   font-weight: 600;
-  box-shadow: 0 0 40px var(--gold-glow);
+  box-shadow: 0 0 40px var(--color-d1-glow);
+  animation: ballDrop 0.55s var(--ease-spring) both,
+    ballMatch 0.6s var(--ease-spring) 0.55s both;
+}
+
+.num-ball--draw.is-hit-d2 {
+  background: var(--color-d2-grad);
+  border: none;
+  color: #000;
+  font-weight: 600;
+  box-shadow: 0 0 40px var(--color-d2-glow);
+  animation: ballDrop 0.55s var(--ease-spring) both,
+    ballMatch 0.6s var(--ease-spring) 0.55s both;
+}
+
+.num-ball--draw.is-hit-d3 {
+  background: var(--color-d3-grad);
+  border: none;
+  color: #000;
+  font-weight: 600;
+  box-shadow: 0 0 40px var(--color-d3-glow);
   animation: ballDrop 0.55s var(--ease-spring) both,
     ballMatch 0.6s var(--ease-spring) 0.55s both;
 }
