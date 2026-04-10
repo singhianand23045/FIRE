@@ -121,6 +121,25 @@ export function initFirstReveal() {
       const numbers = oraclePick(freshState.soulProfile);
       updateState({ currentNumbers: numbers });
 
+      function validateNumbers() {
+        const isUnique = new Set(numbers).size === numbers.length;
+        if (!isUnique) {
+          btn.classList.add('reveal-btn--disabled');
+          btn.innerHTML = 'NUMBERS MUST BE UNIQUE';
+        } else {
+          const affordable = canPlay();
+          if (!affordable) {
+            btn.classList.add('reveal-btn--disabled');
+            noEntriesMsg.style.display = '';
+          } else {
+            btn.classList.remove('reveal-btn--disabled');
+            noEntriesMsg.style.display = 'none';
+          }
+          btn.innerHTML = `<div class="reveal-btn__glow"></div>REVEAL MY FATE`;
+          updateState({ currentNumbers: numbers });
+        }
+      }
+
       // Show profile link once ritual is complete
       if (freshState.ritualComplete && freshState.soulProfile) {
         const { zodiacSymbol, zodiac } = freshState.soulProfile;
@@ -136,6 +155,44 @@ export function initFirstReveal() {
         const ball = document.createElement('div');
         ball.className = `num-ball num-ball--lg num-ball--player anim-float delay-${i + 1}`;
         ball.textContent = n;
+        ball.style.touchAction = 'none';
+        ball.style.cursor = 'ns-resize';
+
+        let startY = 0;
+        let isDragging = false;
+
+        ball.addEventListener('pointerdown', (e) => {
+          isDragging = true;
+          startY = e.clientY;
+          ball.setPointerCapture(e.pointerId);
+        });
+
+        ball.addEventListener('pointermove', (e) => {
+          if (!isDragging) return;
+          const deltaY = e.clientY - startY;
+          if (Math.abs(deltaY) > 30) {
+            if (deltaY < 0) {
+              n++;
+            } else {
+              n--;
+            }
+            // wrap bounds
+            if (n > CONFIG.DRAW_POOL_SIZE) n = 1;
+            if (n < 1) n = CONFIG.DRAW_POOL_SIZE;
+            
+            ball.textContent = n;
+            numbers[i] = n;
+            startY = e.clientY;
+            haptic.light();
+            
+            validateNumbers();
+          }
+        });
+
+        const stopDrag = () => { isDragging = false; };
+        ball.addEventListener('pointerup', stopDrag);
+        ball.addEventListener('pointercancel', stopDrag);
+
         numbersRow.appendChild(ball);
       });
 
