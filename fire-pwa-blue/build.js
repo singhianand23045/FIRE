@@ -4,7 +4,7 @@
 // ─────────────────────────────────────────────────────────────
 
 const { execSync }    = require('child_process');
-const { readFileSync, writeFileSync, mkdirSync, rmSync, cpSync, copyFileSync } = require('fs');
+const { readFileSync, writeFileSync, mkdirSync, rmSync, cpSync, copyFileSync, existsSync } = require('fs');
 const path            = require('path');
 
 const ROOT = __dirname;
@@ -64,6 +64,9 @@ writeFileSync(path.join(DIST, 'sw.js'), sw);
 // ── 5. Copy static files ──────────────────────────────────────
 console.log('Copying static files...');
 copyFileSync(path.join(ROOT, 'manifest.json'), path.join(DIST, 'manifest.json'));
+if (existsSync(path.join(ROOT, '404.html'))) {
+  copyFileSync(path.join(ROOT, '404.html'), path.join(DIST, '404.html'));
+}
 cpSync(path.join(ROOT, 'styles'),  path.join(DIST, 'styles'),  { recursive: true });
 cpSync(path.join(ROOT, 'assets'),  path.join(DIST, 'assets'),  { recursive: true });
 
