@@ -25,8 +25,9 @@ export function initUserAvatar() {
   _btn.id = 'user-avatar-btn';
   _btn.className = 'user-avatar-btn';
   _btn.setAttribute('aria-label', 'Open wallet');
-  _btn.innerHTML = _avatarSVG(22, 1.8);
   app.appendChild(_btn);
+
+  _updateAvatarBtn(); // Initial render
 
   // ── Overlay ───────────────────────────────────────────────
   _overlay = document.createElement('div');
@@ -119,6 +120,16 @@ export function initUserAvatar() {
     setTimeout(() => goto('soul-profile', { viewOnly: true }), 300);
   });
 
+  document.addEventListener('fire:state:updated', (e) => {
+    if (e.detail.entries !== undefined) {
+      _updateAvatarBtn();
+      // If panel is open, we should probably update the panel entries too
+      if (_panel.classList.contains('wallet-panel--visible')) {
+        document.getElementById('wp-entries').textContent = e.detail.entries;
+      }
+    }
+  });
+
   if (CONFIG.DEBUG) console.log('[FIRE][Avatar] initUserAvatar complete');
 }
 
@@ -154,8 +165,12 @@ function _avatarSVG(size, stroke) {
 
 // ── Update avatar button icon ─────────────────────────────────
 function _updateAvatarBtn() {
-  // Always SVG — never zodiac symbol on the button
-  _btn.innerHTML = _avatarSVG(22, 1.8);
+  const state = getState();
+  const entries = state.entries ?? 0;
+  _btn.innerHTML = `
+    <div class="user-avatar-btn__label">ENTRIES</div>
+    <div class="user-avatar-btn__value">${entries}</div>
+  `;
 }
 
 // ── Populate panel content ────────────────────────────────────

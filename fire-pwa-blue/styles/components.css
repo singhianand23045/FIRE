@@ -865,21 +865,38 @@
   top: calc(var(--safe-top) + var(--jackpot-bar-height) + var(--s3));
   right: var(--s5);
   z-index: 999;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
+  min-width: 60px;
+  height: 48px;
+  border-radius: var(--r-md);
   background: rgba(10, 20, 8, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.45);
   box-shadow: 0 0 16px rgba(255, 255, 255, 0.12), inset 0 0 8px rgba(255, 255, 255, 0.04);
-  font-size: 20px;
   color: var(--gold);
   cursor: pointer;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 2px;
+  padding: 0 var(--s3);
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.user-avatar-btn__label {
+  font-family: var(--font-sans);
+  font-size: 8px;
+  letter-spacing: 2px;
+  color: var(--text3);
+  text-transform: uppercase;
+}
+
+.user-avatar-btn__value {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 300;
+  line-height: 1;
 }
 
 .user-avatar-btn:active {

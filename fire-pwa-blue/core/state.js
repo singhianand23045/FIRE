@@ -99,6 +99,7 @@ export function updateState(partial) {
   if (!_state) loadState();
   Object.assign(_state, partial);
   _persist();
+  document.dispatchEvent(new CustomEvent('fire:state:updated', { detail: partial }));
   return _state;
 }
 
