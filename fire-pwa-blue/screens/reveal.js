@@ -154,7 +154,7 @@ export function initReveal() {
       startAmbient();
 
       // ── Animate balls dropping ────────────────────────
-      const dropTimes = [800, 1800, 2900, 3700, 5000, 6200];
+      const dropTimes = [1500, 4000, 7200, 11200, 16200, 22200];
       let matchCountSoFar = 0;
 
       const MATCH_WHISPER_POOLS = [
@@ -224,7 +224,7 @@ export function initReveal() {
         whisperEl.textContent = pickUnique(WHISPERS_FINAL_PAUSE, 'final_pause');
         haptic.heavy();
         playTone('pause');
-      }, 7200);
+      }, 24200);
 
       setTimeout(() => {
         // Record draw
@@ -244,7 +244,7 @@ export function initReveal() {
           score,
           nearMissData: nearMiss,
         });
-      }, 8200);
+      }, 25700);
     },
 
     onExit() {

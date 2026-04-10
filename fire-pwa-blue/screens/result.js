@@ -301,7 +301,7 @@ export function initResult() {
             goto('reveal');
           }
         };
-        _autoTimer = setTimeout(_tryAdvance, 3000);
+        _autoTimer = setTimeout(_tryAdvance, 8000);
       }
 
       // ── 5. Hat-trick badge ──────────────────────────────
