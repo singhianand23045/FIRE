@@ -286,6 +286,32 @@ export function initResult() {
             toggle.textContent = hidden ? 'VIEW GAME SUMMARY ↓' : 'HIDE SUMMARY ↑';
           });
         }
+
+        // Binge-play auto-start countdown
+        let countdownValue = 5;
+        againBtn.textContent = `NEXT GAME IN ${countdownValue}...`;
+
+        const _tickCountdown = () => {
+          const overlayOpen = document.querySelector('.wallet-panel--visible') ||
+                              document.getElementById('fire-dev-panel');
+          const isSummaryOpen = card && !card.classList.contains('game-summary--hidden');
+          const isRitualOpen = ritualInviteEl && ritualInviteEl.style.display !== 'none';
+          
+          if (!overlayOpen && !isSummaryOpen && !isRitualOpen) {
+            countdownValue--;
+            if (countdownValue > 0) {
+              againBtn.textContent = `NEXT GAME IN ${countdownValue}...`;
+            } else {
+              againBtn.textContent = `STARTING...`;
+              haptic.medium();
+              evt_replayTapped(getState().drawCount);
+              goto('first-reveal');
+              return; // Stop ticking
+            }
+          }
+          _autoTimer = setTimeout(_tickCountdown, 1000);
+        };
+        _autoTimer = setTimeout(_tickCountdown, 1000);
       } else {
         // Draws 1 or 2 — show progress dots, auto-advance after 3s
         drawAreaEl.innerHTML = _buildDrawProgressHTML(gameDrawIndex, nearMissData, drawn);

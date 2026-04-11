@@ -3,3 +3,4 @@ dist/
 fire-pwa-blue/dist/
 public/
 .vercel/
+.dyad/
