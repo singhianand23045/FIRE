@@ -368,9 +368,10 @@
 }
 
 .result__score {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 96px;
-  font-weight: 300;
+  font-weight: 600;
+  letter-spacing: -4px;
   color: var(--gold);
   text-shadow: 0 0 60px var(--gold-glow);
   line-height: 1;
@@ -378,11 +379,11 @@
 }
 
 .result__score-sub {
-  font-family: var(--font-serif);
-  font-size: 18px;
-  font-weight: 300;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 500;
   color: var(--text2);
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
 }
 
 .result__oracle-msg {
@@ -710,9 +711,9 @@
 }
 
 .soul-profile__stat-value {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 20px;
-  font-weight: 300;
+  font-weight: 500;
   color: var(--plat);
   text-align: center;
 }

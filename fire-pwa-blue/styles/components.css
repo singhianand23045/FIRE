@@ -68,8 +68,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-serif);
-  font-weight: 400;
+  font-family: var(--font-sans);
+  font-weight: 600;
   transition: all 0.35s var(--ease-out);
   -webkit-tap-highlight-color: transparent;
   user-select: none;
@@ -203,7 +203,7 @@
   background: var(--color-d1-grad);
   border: none;
   color: #000;
-  font-weight: 600;
+  font-weight: 700;
   box-shadow: 0 0 40px var(--color-d1-glow);
   animation: ballDrop 0.55s var(--ease-spring) both,
     ballMatch 0.6s var(--ease-spring) 0.55s both;
@@ -213,7 +213,7 @@
   background: var(--color-d2-grad);
   border: none;
   color: #000;
-  font-weight: 600;
+  font-weight: 700;
   box-shadow: 0 0 40px var(--color-d2-glow);
   animation: ballDrop 0.55s var(--ease-spring) both,
     ballMatch 0.6s var(--ease-spring) 0.55s both;
@@ -223,7 +223,7 @@
   background: var(--color-d3-grad);
   border: none;
   color: #000;
-  font-weight: 600;
+  font-weight: 700;
   box-shadow: 0 0 40px var(--color-d3-glow);
   animation: ballDrop 0.55s var(--ease-spring) both,
     ballMatch 0.6s var(--ease-spring) 0.55s both;
@@ -406,9 +406,10 @@
 }
 
 .streak-badge__count {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 26px;
-  font-weight: 300;
+  font-weight: 600;
+  letter-spacing: -1px;
   color: var(--fire);
   line-height: 1;
 }
@@ -448,7 +449,8 @@
   border: none;
   border-right: 1px solid rgba(255, 255, 255, 0.2);
   color: var(--gold);
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
+  font-weight: 500;
   font-size: 22px;
   padding: 18px 4px;
   text-align: center;
@@ -603,7 +605,8 @@
   border: var(--border-gold);
   color: var(--gold);
   font-size: 28px;
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
+  font-weight: 500;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -621,9 +624,10 @@
 }
 
 .ritual__stepper-val {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 84px;
-  font-weight: 300;
+  font-weight: 600;
+  letter-spacing: -2px;
   color: var(--gold);
   line-height: 1;
   text-shadow: 0 0 40px var(--gold-glow);
@@ -763,11 +767,11 @@
 }
 
 .jackpot-banner__amount {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 28px;
-  font-weight: 300;
+  font-weight: 600;
+  letter-spacing: -0.5px;
   color: var(--gold);
-  letter-spacing: 1px;
   line-height: 1;
   transition: color 0.3s ease;
 }
@@ -893,9 +897,10 @@
 }
 
 .user-avatar-btn__value {
-  font-family: var(--font-serif);
-  font-size: 22px;
-  font-weight: 300;
+  font-family: var(--font-sans);
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
   line-height: 1;
 }
 
@@ -1012,9 +1017,10 @@
 }
 
 .wallet-stat__value {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 32px;
-  font-weight: 300;
+  font-weight: 600;
+  letter-spacing: -1px;
   line-height: 1;
 }
 
