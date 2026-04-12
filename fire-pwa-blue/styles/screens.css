@@ -64,7 +64,7 @@
 /* Screens below the fixed jackpot banner get top padding     */
 
 :root {
-  --jackpot-bar-height: 64px;
+  --jackpot-bar-height: 128px;
 }
 
 /* All screens except splash clear the jackpot banner */

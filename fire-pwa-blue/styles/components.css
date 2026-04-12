@@ -705,15 +705,15 @@
   left: var(--s5);
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 10px;
 }
 
 .jackpot-banner__dot {
-  width: 6px;
-  height: 6px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   background: #ff3b30;
-  box-shadow: 0 0 6px rgba(255, 59, 48, 0.8);
+  box-shadow: 0 0 12px rgba(255, 59, 48, 0.8);
   flex-shrink: 0;
   animation: livePulse 1.5s ease-in-out infinite;
 }
@@ -725,8 +725,8 @@
 
 .jackpot-banner__live-text {
   font-family: var(--font-sans);
-  font-size: 9px;
-  letter-spacing: 3px;
+  font-size: 18px;
+  letter-spacing: 6px;
   color: rgba(255, 100, 80, 0.85);
   text-transform: uppercase;
 }
@@ -741,12 +741,12 @@
 
 .jackpot-banner__label {
   font-family: var(--font-sans);
-  font-size: 8px;
-  letter-spacing: 5px;
+  font-size: 16px;
+  letter-spacing: 10px;
   color: var(--text3);
   text-transform: uppercase;
   line-height: 1;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 
 /* Sparkle — absolute right */
@@ -756,7 +756,7 @@
 }
 
 .jackpot-banner__sparkle {
-  font-size: 12px;
+  font-size: 24px;
   color: var(--gold);
   opacity: 0.5;
   animation: breathe 2.5s ease-in-out infinite;
@@ -764,10 +764,10 @@
 
 .jackpot-banner__amount {
   font-family: var(--font-serif);
-  font-size: 28px;
+  font-size: 56px;
   font-weight: 300;
   color: var(--gold);
-  letter-spacing: 1px;
+  letter-spacing: 2px;
   line-height: 1;
   transition: color 0.3s ease;
 }
@@ -837,7 +837,7 @@
   bottom: 0;
   left: 15%;
   right: 15%;
-  height: 1px;
+  height: 2px;
   background: linear-gradient(90deg, transparent, var(--gold), rgba(255, 255, 255, 0.8), var(--gold), transparent);
   animation: glowLinePulse 2.5s ease-in-out infinite;
   transform-origin: center;
@@ -846,7 +846,7 @@
 /* Up indicator */
 .jackpot-amount--up::after {
   content: ' ↑';
-  font-size: 14px;
+  font-size: 28px;
   color: var(--gold);
   -webkit-text-fill-color: var(--gold);
   animation: fadeIn 0.3s ease both, fadeOut 0.3s ease 1.2s both;
