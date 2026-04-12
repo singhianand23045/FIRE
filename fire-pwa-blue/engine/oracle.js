@@ -4,21 +4,23 @@
 // number distribution used by oraclePick() in draw.js.
 // ─────────────────────────────────────────────────────────────
 
+import { CONFIG } from '../config.js';
+
 // ── Zodiac ───────────────────────────────────────────────────
 
 const ZODIAC_DATA = {
-  Aries:       { symbol: '♈', lucky: [1, 9, 19, 28, 36, 45] },
-  Taurus:      { symbol: '♉', lucky: [2, 6, 11, 29, 38, 47] },
-  Gemini:      { symbol: '♊', lucky: [3, 5, 12, 21, 33, 51] },
-  Cancer:      { symbol: '♋', lucky: [4, 7, 13, 24, 40, 49] },
-  Leo:         { symbol: '♌', lucky: [1, 10, 19, 28, 46, 50] },
-  Virgo:       { symbol: '♍', lucky: [5, 14, 23, 32, 50, 55] },
-  Libra:       { symbol: '♎', lucky: [6, 15, 24, 33, 42, 51] },
-  Scorpio:     { symbol: '♏', lucky: [4, 7, 13, 28, 41, 49] },
-  Sagittarius: { symbol: '♐', lucky: [3, 9, 21, 30, 42, 54] },
-  Capricorn:   { symbol: '♑', lucky: [8, 17, 26, 35, 44, 53] },
-  Aquarius:    { symbol: '♒', lucky: [2, 11, 20, 29, 47, 56] },
-  Pisces:      { symbol: '♓', lucky: [7, 16, 25, 34, 43, 52] },
+  Aries:       { symbol: '♈', lucky: [1, 9, 19, 28, 36, 45].filter(n => n <= CONFIG.DRAW_POOL_SIZE) },
+  Taurus:      { symbol: '♉', lucky: [2, 6, 11, 29, 38, 47].filter(n => n <= CONFIG.DRAW_POOL_SIZE) },
+  Gemini:      { symbol: '♊', lucky: [3, 5, 12, 21, 33, 51].filter(n => n <= CONFIG.DRAW_POOL_SIZE) },
+  Cancer:      { symbol: '♋', lucky: [4, 7, 13, 24, 40, 49].filter(n => n <= CONFIG.DRAW_POOL_SIZE) },
+  Leo:         { symbol: '♌', lucky: [1, 10, 19, 28, 46, 50].filter(n => n <= CONFIG.DRAW_POOL_SIZE) },
+  Virgo:       { symbol: '♍', lucky: [5, 14, 23, 32, 50, 55].filter(n => n <= CONFIG.DRAW_POOL_SIZE) },
+  Libra:       { symbol: '♎', lucky: [6, 15, 24, 33, 42, 51].filter(n => n <= CONFIG.DRAW_POOL_SIZE) },
+  Scorpio:     { symbol: '♏', lucky: [4, 7, 13, 28, 41, 49].filter(n => n <= CONFIG.DRAW_POOL_SIZE) },
+  Sagittarius: { symbol: '♐', lucky: [3, 9, 21, 30, 42, 54].filter(n => n <= CONFIG.DRAW_POOL_SIZE) },
+  Capricorn:   { symbol: '♑', lucky: [8, 17, 26, 35, 44, 53].filter(n => n <= CONFIG.DRAW_POOL_SIZE) },
+  Aquarius:    { symbol: '♒', lucky: [2, 11, 20, 29, 47, 56].filter(n => n <= CONFIG.DRAW_POOL_SIZE) },
+  Pisces:      { symbol: '♓', lucky: [7, 16, 25, 34, 43, 52].filter(n => n <= CONFIG.DRAW_POOL_SIZE) },
 };
 
 function _getZodiac(day, month) {
@@ -63,10 +65,10 @@ function _nameToKey(name) {
 // ── Element ──────────────────────────────────────────────────
 
 const ELEMENT_NUMBERS = {
-  fire:  [33, 36, 38, 40, 42, 44, 46, 48, 50, 52, 55, 57, 59],
-  water: [11, 14, 16, 18, 22, 25, 28, 31, 34, 37, 40, 43, 46],
-  earth: [4, 7, 11, 14, 18, 22, 25, 29, 33, 35, 38, 41],
-  air:   [2, 11, 13, 20, 29, 31, 38, 47, 49, 56],
+  fire:  [33, 36, 38, 40, 42, 44, 46, 48, 50, 52, 55, 57, 59].filter(n => n <= CONFIG.DRAW_POOL_SIZE),
+  water: [11, 14, 16, 18, 22, 25, 28, 31, 34, 37, 40, 43, 46].filter(n => n <= CONFIG.DRAW_POOL_SIZE),
+  earth: [4, 7, 11, 14, 18, 22, 25, 29, 33, 35, 38, 41].filter(n => n <= CONFIG.DRAW_POOL_SIZE),
+  air:   [2, 11, 13, 20, 29, 31, 38, 47, 49, 56].filter(n => n <= CONFIG.DRAW_POOL_SIZE),
 };
 
 export const ELEMENT_PERSONALITY = {
@@ -79,23 +81,23 @@ export const ELEMENT_PERSONALITY = {
 // ── Colour ───────────────────────────────────────────────────
 
 const COLOUR_NUMBERS = {
-  red:    [1, 3, 5, 11, 13, 14, 18, 23],
-  orange: [9, 10, 16, 19, 22, 24, 27, 32],
-  yellow: [19, 23, 27, 28, 32, 35, 39, 43],
-  green:  [26, 29, 33, 36, 40, 43, 45, 48],
-  blue:   [35, 39, 42, 46, 49, 51, 53, 57],
-  purple: [44, 47, 50, 53, 56, 58, 59, 41],
-  pink:   [6, 9, 13, 16, 20, 23, 27, 30],
-  gold:   [7, 14, 21, 28, 35, 42, 49, 56],
+  red:    [1, 3, 5, 11, 13, 14, 18, 23].filter(n => n <= CONFIG.DRAW_POOL_SIZE),
+  orange: [9, 10, 16, 19, 22, 24, 27, 32].filter(n => n <= CONFIG.DRAW_POOL_SIZE),
+  yellow: [19, 23, 27, 28, 32, 35, 39, 43].filter(n => n <= CONFIG.DRAW_POOL_SIZE),
+  green:  [26, 29, 33, 36, 40, 43, 45, 48].filter(n => n <= CONFIG.DRAW_POOL_SIZE),
+  blue:   [35, 39, 42, 46, 49, 51, 53, 57].filter(n => n <= CONFIG.DRAW_POOL_SIZE),
+  purple: [44, 47, 50, 53, 56, 58, 59, 41].filter(n => n <= CONFIG.DRAW_POOL_SIZE),
+  pink:   [6, 9, 13, 16, 20, 23, 27, 30].filter(n => n <= CONFIG.DRAW_POOL_SIZE),
+  gold:   [7, 14, 21, 28, 35, 42, 49, 56].filter(n => n <= CONFIG.DRAW_POOL_SIZE),
 };
 
 // ── Location ─────────────────────────────────────────────────
 
 const LOCATION_NUMBERS = {
-  americas: [7, 11, 13, 17, 21, 31, 42],
-  europe:   [3, 7, 13, 17, 21, 33, 42],
-  asia:     [6, 8, 9, 18, 28, 38, 48],
-  other:    [7, 11, 22, 33, 44, 55],
+  americas: [7, 11, 13, 17, 21, 31, 42].filter(n => n <= CONFIG.DRAW_POOL_SIZE),
+  europe:   [3, 7, 13, 17, 21, 33, 42].filter(n => n <= CONFIG.DRAW_POOL_SIZE),
+  asia:     [6, 8, 9, 18, 28, 38, 48].filter(n => n <= CONFIG.DRAW_POOL_SIZE),
+  other:    [7, 11, 22, 33, 44, 55].filter(n => n <= CONFIG.DRAW_POOL_SIZE),
 };
 
 // ── Tribe ────────────────────────────────────────────────────
@@ -107,24 +109,24 @@ function _tribeToNumbers(tribe) {
   for (const c of tribe.toLowerCase()) {
     h = ((h << 5) + h + c.charCodeAt(0)) & 0x7FFFFFFF;
   }
-  const n1 = (h % 59) + 1;
-  const n2 = ((h >> 6) % 59) + 1;
-  const n3 = ((h >> 12) % 59) + 1;
-  return [...new Set([n1, n2, n3])].filter(n => n >= 1 && n <= 59);
+  const n1 = (h % CONFIG.DRAW_POOL_SIZE) + 1;
+  const n2 = ((h >> 6) % CONFIG.DRAW_POOL_SIZE) + 1;
+  const n3 = ((h >> 12) % CONFIG.DRAW_POOL_SIZE) + 1;
+  return [...new Set([n1, n2, n3])].filter(n => n >= 1 && n <= CONFIG.DRAW_POOL_SIZE);
 }
 
 // ── Weight builder ───────────────────────────────────────────
 
 function _buildWeightedNumbers(profile, zodiacLucky) {
   const w = {};
-  for (let i = 1; i <= 59; i++) w[i] = 1.0;
+  for (let i = 1; i <= CONFIG.DRAW_POOL_SIZE; i++) w[i] = 1.0;
 
   // 1. Zodiac (+2.0) — strongest non-soul factor
   zodiacLucky.forEach(n => { if (w[n] !== undefined) w[n] += 2.0; });
 
   // 2. Name harmonics (+1.5) — spread across number line
   const key = profile.nameKey;
-  for (let n = key; n <= 59; n += 9) w[n] += 1.5;
+  for (let n = key; n <= CONFIG.DRAW_POOL_SIZE; n += 9) w[n] += 1.5;
 
   // 3. Element (+1.0)
   (ELEMENT_NUMBERS[profile.element] || []).forEach(n => {
@@ -138,13 +140,13 @@ function _buildWeightedNumbers(profile, zodiacLucky) {
 
   // 5. Soul number (+3.0, proximity decay ±5 range)
   const sn = profile.soulNumber;
-  if (sn >= 1 && sn <= 59) {
+  if (sn >= 1 && sn <= CONFIG.DRAW_POOL_SIZE) {
     w[sn] += 3.0;
     const decays = [1.5, 1.05, 0.73, 0.51, 0.36];
     decays.forEach((boost, i) => {
       const d = i + 1;
       if (sn - d >= 1)  w[sn - d] += boost;
-      if (sn + d <= 59) w[sn + d] += boost;
+      if (sn + d <= CONFIG.DRAW_POOL_SIZE) w[sn + d] += boost;
     });
   }
 
@@ -173,7 +175,7 @@ export function buildSoulProfile(answers) {
     location,      // 'americas'|'europe'|'asia'|'other'
     element,       // 'fire'|'water'|'earth'|'air'
     colour,        // 'red'|'orange'|'yellow'|'green'|'blue'|'purple'|'pink'|'gold'
-    soulNumber,    // int 1-59
+    soulNumber,    // int 1-CONFIG.DRAW_POOL_SIZE
     tribe,         // string (optional)
   } = answers;
 
@@ -181,7 +183,7 @@ export function buildSoulProfile(answers) {
   const zodiacD  = ZODIAC_DATA[zodiac];
   const nameKey  = _nameToKey(name);
   const personality = ELEMENT_PERSONALITY[element] || ELEMENT_PERSONALITY.air;
-  const sn = Math.min(59, Math.max(1, parseInt(soulNumber, 10) || 7));
+  const sn = Math.min(CONFIG.DRAW_POOL_SIZE, Math.max(1, parseInt(soulNumber, 10) || 7));
 
   const profile = {
     name:               name || '',

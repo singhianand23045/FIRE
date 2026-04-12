@@ -143,7 +143,7 @@ function _refreshState() {
 // Used by reveal.js when dev override is active
 export function _constructForcedDraw(playerNumbers, matchCount) {
   const clampedCount = Math.max(0, Math.min(matchCount, playerNumbers.length));
-  const pool = Array.from({ length: CONFIG.DRAW_POOL_SIZE ?? 49 }, (_, i) => i + 1);
+  const pool = Array.from({ length: CONFIG.DRAW_POOL_SIZE ?? 27 }, (_, i) => i + 1);
   const nonPlayer = pool.filter(n => !playerNumbers.includes(n));
 
   // Shuffle helpers

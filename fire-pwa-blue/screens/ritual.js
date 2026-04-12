@@ -9,6 +9,7 @@ import { registerScreen, goto } from '../core/router.js';
 import { getState, updateState } from '../core/state.js';
 import { buildSoulProfile } from '../engine/oracle.js';
 import { haptic } from '../core/device.js';
+import { CONFIG } from '../config.js';
 import {
   evt_ritualStarted,
   evt_ritualQuestionAnswered,
@@ -72,7 +73,7 @@ const QUESTIONS = [
     oracle: 'Close your eyes.\nWhat number appears?',
     type: 'stepper',
     min: 1,
-    max: 59,
+    max: CONFIG.DRAW_POOL_SIZE,
     default: 7,
   },
   {
@@ -386,7 +387,7 @@ function _buildStepper(area, card, q) {
 
   const hint = document.createElement('div');
   hint.className = 'ritual__stepper-hint';
-  hint.textContent = 'Trust your instinct · 1 – 59';
+  hint.textContent = `Trust your instinct · 1 – ${CONFIG.DRAW_POOL_SIZE}`;
   area.appendChild(hint);
 
   const stepperWrap = document.createElement('div');

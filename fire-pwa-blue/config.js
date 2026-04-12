@@ -25,7 +25,7 @@ export const CONFIG = {
   BUILD_PHASE: 3,
 
   // ── Draw Engine ────────────────────────────────────────────
-  DRAW_POOL_SIZE: 59,    // numbers 1–59 (matches prize table)
+  DRAW_POOL_SIZE: 27,    // numbers 1–27 (matches prize table)
   DRAW_PICK_COUNT: 6,    // 6 numbers per draw
   BOOSTED_DRAWS: 3,      // first N draws use boosted RNG
 

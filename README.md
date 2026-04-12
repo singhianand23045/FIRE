@@ -268,7 +268,7 @@ All randomness uses `crypto.getRandomValues()` (not `Math.random()`).
 
 **Core functions:**
 
-- **`normalDraw()`** — Fisher-Yates shuffle of [1..59], take first 6, sort.
+- **`normalDraw()`** — Fisher-Yates shuffle of [1..27], take first 6, sort.
 - **`boostedDraw(playerNumbers, drawIndex)`** — First 3 draws use boosted RNG:
   - Draw 1: 90% chance of 3+ matches
   - Draw 2: 70% chance of 3+ matches
@@ -316,7 +316,7 @@ Transforms ritual answers into a **Soul Profile** with weighted numbers.
 - `name` → Pythagorean numerology (A=1, B=2... reduce to single digit)
 - `element` (fire/water/earth/air) → set of associated numbers
 - `colour` (8 options) → set of associated numbers
-- `soulNumber` (1-59, user-chosen) → strongest weight + proximity decay
+- `soulNumber` (1-27, user-chosen) → strongest weight + proximity decay
 - `location` (americas/europe/asia/other) → set of associated numbers
 - `tribe` (text, optional) → djb2 hash → 3 numbers
 
@@ -459,7 +459,7 @@ Queued, non-overlapping toasts at screen bottom. Used for Oracle commentary duri
 3. **Location** — tile grid (Americas/Europe/Asia/Everywhere)
 4. **Element** — tile grid (Fire/Water/Earth/Air)
 5. **Colour** — color swatches (8 options)
-6. **Soul Number** — stepper (1-59, hold for fast increment)
+6. **Soul Number** — stepper (1-27, hold for fast increment)
 7. **Tribe** — text input (optional, skippable)
 
 On complete: `buildSoulProfile(answers)` → save to state → navigate to `soul-profile`.
@@ -635,7 +635,7 @@ All visual constants as CSS custom properties:
 | `FIREBASE` | `{...}` | Firebase project config |
 | `APP_VERSION` | `2.0.0` | Used for state migration |
 | `BUILD_PHASE` | `3` | Current feature phase |
-| `DRAW_POOL_SIZE` | `59` | Numbers 1–59 |
+| `DRAW_POOL_SIZE` | `27` | Numbers 1–27 |
 | `DRAW_PICK_COUNT` | `6` | 6 numbers per draw |
 | `BOOSTED_DRAWS` | `3` | First 3 draws use boosted RNG |
 | `BOOST_ODDS` | `[0.90, 0.70, 0.50]` | Boost probability per draw |
