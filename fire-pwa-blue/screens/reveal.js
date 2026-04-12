@@ -139,6 +139,7 @@ export function initReveal() {
       });
 
       // ── Render progress dots ──────────────────────────
+      /*
       progressEl.innerHTML = '';
       for (let i = 0; i < CONFIG.DRAW_PICK_COUNT; i++) {
         const d = document.createElement('div');
@@ -146,6 +147,7 @@ export function initReveal() {
         d.id = `pdot-${i}`;
         progressEl.appendChild(d);
       }
+      */
 
       // ── Set initial whisper ───────────────────────────
       whisperEl.textContent = pickUnique(WHISPERS_OPENING, 'opening');
