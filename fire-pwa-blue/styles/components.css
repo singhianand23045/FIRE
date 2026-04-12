@@ -705,15 +705,15 @@
   left: var(--s5);
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .jackpot-banner__dot {
-  width: 12px;
-  height: 12px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
   background: #ff3b30;
-  box-shadow: 0 0 12px rgba(255, 59, 48, 0.8);
+  box-shadow: 0 0 9px rgba(255, 59, 48, 0.8);
   flex-shrink: 0;
   animation: livePulse 1.5s ease-in-out infinite;
 }
@@ -725,8 +725,8 @@
 
 .jackpot-banner__live-text {
   font-family: var(--font-sans);
-  font-size: 18px;
-  letter-spacing: 6px;
+  font-size: 13.5px;
+  letter-spacing: 4.5px;
   color: rgba(255, 100, 80, 0.85);
   text-transform: uppercase;
 }
