@@ -5,7 +5,7 @@
 // ─────────────────────────────────────────────────────────────
 
 import { registerScreen, goto, currentScreen } from '../core/router.js';
-import { getState, updateState } from '../core/state.js';
+import { getState, updateState, recordEngagementSignal } from '../core/state.js';
 import { oraclePick } from '../engine/draw.js';
 import { applyDrawPrize, calculatePrize, completeGame } from '../engine/economy.js';
 import { processDrawStreak } from '../engine/streak.js';
@@ -16,9 +16,11 @@ import { whisper, clearWhispers } from '../components/toast.js';
 import { evt_replayTapped } from '../core/analytics.js';
 import { CONFIG } from '../config.js';
 import { attachDevTrigger } from './devmode.js';
+import { getAdaptiveResultParams } from '../engine/adapt.js';
+import { getOracleText, getOracleParams, callOracle, getCurrentMood } from '../engine/oracle-llm.js';
 import {
   MSGS_BLAZES, MSGS_TRIPLE, MSGS_BUILDING, MSGS_GATHERING,
-  WHISPERS_AGAIN,
+  WHISPERS_AGAIN, WHISPERS_AGAIN_PASSIVE, WHISPERS_AGAIN_ACTIVE,
 } from '../data/quotes.js';
 
 // ── Non-repeating picker ──────────────────────────────────────
@@ -61,7 +63,7 @@ export function initResult() {
     <div id="result-ritual-invite" class="result__ritual-invite" style="display:none"></div>
 
     <div class="result__actions" id="result-actions" style="display:none">
-      <button class="again-btn" id="result-again-btn">NEW GAME →</button>
+      <button class="again-btn" id="result-again-btn">NEW GAME →</button><!-- adaptive label set in onEnter -->
       <span class="result__pick-link" id="result-pick-link" style="display:none">Pick different numbers</span>
     </div>
   `;
@@ -168,13 +170,19 @@ export function initResult() {
       ? `<span class="game-summary__total-money">+${_fmtMoney(totalMoney)}</span>`
       : '';
 
-    // Build celebration line
-    const parts = [];
-    if (totalEntries > 0) parts.push(`+${totalEntries} entries`);
-    if (totalMoney > 0) parts.push(`+${_fmtMoney(totalMoney)}`);
-    const celebLine = parts.length > 0
-      ? parts.join(' · ')
-      : 'The Oracle watches. Your time is coming.';
+    // Build celebration line — LLM-generated or fallback
+    const llmSummary = getOracleText('gameSummaryLine');
+    let celebLine;
+    if (llmSummary) {
+      celebLine = llmSummary;
+    } else {
+      const parts = [];
+      if (totalEntries > 0) parts.push(`+${totalEntries} entries`);
+      if (totalMoney > 0) parts.push(`+${_fmtMoney(totalMoney)}`);
+      celebLine = parts.length > 0
+        ? parts.join(' · ')
+        : 'The Oracle watches. Your time is coming.';
+    }
 
     return `
       <div class="game-end">
@@ -204,12 +212,14 @@ export function initResult() {
   let _params = {};
   let _autoTimer = null;
   let _whisperTimers = [];
+  let _enterAt = 0;
 
   registerScreen({
     id: 'result',
     el,
     async onEnter(params = {}) {
       _params = params;
+      _enterAt = Date.now();
       const { score, nearMissData } = params;
       if (!score) return; // safety
 
@@ -247,8 +257,14 @@ export function initResult() {
         scoreSubEl.textContent = `${matchCount} ${matchCount === 1 ? 'Match' : 'Matches'}`;
       }
 
-      // ── Oracle message — only shown on wins ─────────────
-      if (isWin) {
+      // ── Oracle message — LLM-generated or static pool ───
+      const llmOracleMsg = getOracleText('oracleMessage');
+      if (llmOracleMsg) {
+        // LLM always generates a message — show for all results, not just wins
+        oracleMsgEl.innerHTML = llmOracleMsg;
+        oracleMsgEl.style.display = '';
+        if (CONFIG.DEBUG) console.log('[FIRE][Oracle] Using LLM oracle message');
+      } else if (isWin) {
         const msgPool = {
           blazes: MSGS_BLAZES, triple: MSGS_TRIPLE,
           building: MSGS_BUILDING, gathering: MSGS_GATHERING,
@@ -266,6 +282,20 @@ export function initResult() {
 
       drawAreaEl.innerHTML = '';
       const actionsEl = el.querySelector('#result-actions');
+
+      // Merge LLM params over heuristic adapt params — LLM takes priority
+      const heuristicParams = getAdaptiveResultParams();
+      const llmParams = getOracleParams();
+      const adaptParams = {
+        ...heuristicParams,
+        ...(llmParams || {}),
+        // Keep heuristic engagement label for whisper pool selection
+        engagement: heuristicParams.engagement,
+        // LLM ctaLabel or heuristic
+        ctaLabel: getOracleText('ctaLabel') || heuristicParams.ctaLabel,
+      };
+      const mood = getCurrentMood();
+      if (CONFIG.DEBUG) console.log(`[FIRE][Adapt] Result params — mood: ${mood}, engagement: ${adaptParams.engagement}, autoAdvance: ${adaptParams.autoAdvanceDelayMs}ms, countdown: ${adaptParams.newGameCountdownSecs}s, cta: "${adaptParams.ctaLabel}", source: ${llmParams ? 'LLM' : 'heuristic'}`);
 
       if (gameDrawIndex >= 3) {
         // Final draw — show game summary + NEW GAME button
@@ -290,17 +320,17 @@ export function initResult() {
         const isRitualPending = freshState.ritualTriggered && !freshState.ritualComplete;
 
         if (isRitualPending) {
-          againBtn.textContent = 'NEW GAME →';
+          againBtn.textContent = adaptParams.ctaLabel;
         } else {
-          // Binge-play auto-start countdown
-          let countdownValue = 5;
+          // Binge-play auto-start countdown — duration adapts to engagement
+          let countdownValue = adaptParams.newGameCountdownSecs;
           againBtn.textContent = `NEXT GAME IN ${countdownValue}...`;
 
           const _tickCountdown = () => {
             const overlayOpen = document.querySelector('.wallet-panel--visible') ||
                                 document.getElementById('fire-dev-panel');
             const isSummaryOpen = card && !card.classList.contains('game-summary--hidden');
-            
+
             if (!overlayOpen && !isSummaryOpen) {
               countdownValue--;
               if (countdownValue > 0) {
@@ -318,7 +348,7 @@ export function initResult() {
           _autoTimer = setTimeout(_tickCountdown, 1000);
         }
       } else {
-        // Draws 1 or 2 — show progress dots, auto-advance after 3s
+        // Draws 1 or 2 — show progress dots, auto-advance after adaptive delay
         drawAreaEl.innerHTML = _buildDrawProgressHTML(gameDrawIndex, nearMissData, drawn);
         actionsEl.style.display = 'none';
 
@@ -332,7 +362,7 @@ export function initResult() {
             goto('reveal');
           }
         };
-        _autoTimer = setTimeout(_tryAdvance, 8000);
+        _autoTimer = setTimeout(_tryAdvance, adaptParams.autoAdvanceDelayMs);
       }
 
       // ── 5. Hat-trick badge ──────────────────────────────
@@ -377,12 +407,39 @@ export function initResult() {
         ritualInviteEl.style.display = 'none';
       }
 
-      // ── Delayed Oracle whisper toast ─────────────────────
+      // ── Delayed Oracle whisper toast (LLM or adaptive pool) ─
+      const llmWhisper = getOracleText('resultWhisper');
+      const whisperPool = adaptParams.engagement === 'passive' ? WHISPERS_AGAIN_PASSIVE
+                        : adaptParams.engagement === 'active'  ? WHISPERS_AGAIN_ACTIVE
+                        : WHISPERS_AGAIN;
       _whisperTimers.push(setTimeout(() => {
-        if (currentScreen() === 'result' && !document.querySelector('.wallet-panel--visible')) whisper(pick(WHISPERS_AGAIN, 'again'), 5000);
+        if (currentScreen() === 'result' && !document.querySelector('.wallet-panel--visible')) {
+          whisper(llmWhisper || pick(whisperPool, 'again'), 5000);
+        }
       }, 2200));
     },
     onExit() {
+      // Record engagement signal — dwell time on this result screen + number changes from first-reveal
+      const state = getState();
+      const dwellMs = Date.now() - _enterAt;
+      recordEngagementSignal({
+        drawId: state.drawCount,
+        numberChanges: state.pendingNumberChanges || 0,
+        resultDwellMs: dwellMs,
+      });
+
+      // Fire async LLM call — pre-fetches text for the NEXT set of screens.
+      // Non-blocking: game continues immediately, cache is populated in background.
+      const nearMisses = (_params.nearMissData?.nearMisses || [])
+        .filter(nm => nm.proximity === 'very_close' || nm.proximity === 'close')
+        .map(nm => ({ player: nm.playerNumber, drawn: nm.drawnNumber, distance: nm.distance }));
+
+      const triggerPoint = (state.gameDrawIndex >= 3) ? 'game_complete' : 'result_exit';
+      callOracle(triggerPoint, {
+        nearMissNumbers: nearMisses,
+        gameResults: state.gameResults || [],
+      });
+
       particlesEl.innerHTML = '';
       clearTimeout(_autoTimer);
       _autoTimer = null;
@@ -410,6 +467,10 @@ export function initResult() {
 
   // ── Helper: build near-miss text ─────────────────────────
   function _buildNearMissText(nearMissData, drawn) {
+    // LLM-generated near-miss narrative takes priority
+    const llmNearMiss = getOracleText('nearMissNarrative');
+    if (llmNearMiss) return llmNearMiss;
+
     const { matchCount } = _params.score ?? { matchCount: 0 };
 
     if (!nearMissData || matchCount === 0) {

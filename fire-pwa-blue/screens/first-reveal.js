@@ -14,6 +14,7 @@ import { evt_revealTapped } from '../core/analytics.js';
 import { QUOTES_OPENING } from '../data/quotes.js';
 import { canPlay, startGame, earnEntries } from '../engine/economy.js';
 import { CONFIG } from '../config.js';
+import { getOracleText, consumeOracleCache } from '../engine/oracle-llm.js';
 
 // Non-repeating picker
 const _usedQuotes = [];
@@ -82,6 +83,10 @@ export function initFirstReveal() {
     evt_revealTapped(state.drawCount + 1);
     btn.classList.add('reveal-btn--disabled');
 
+    // Flush number-change count to state before leaving this screen.
+    // result.js onExit reads this to build the engagement signal.
+    updateState({ pendingNumberChanges: _pendingNumberChanges });
+
     // Deduct entries and start game if not already active
     if (!state.gameActive) {
       startGame();
@@ -90,11 +95,17 @@ export function initFirstReveal() {
     goto('reveal');
   });
 
+  // ── Engagement: number-change counter ────────────────────
+  // Counts how many distinct number changes the player makes
+  // before tapping Draw. Reset on every screen entry.
+  let _pendingNumberChanges = 0;
+
   // ── Register ─────────────────────────────────────────────
   registerScreen({
     id: 'first-reveal',
     el,
     onEnter() {
+      _pendingNumberChanges = 0; // reset per game
       const state = getState();
 
       // Top-up grant whenever user can't afford a game
@@ -113,8 +124,15 @@ export function initFirstReveal() {
         noEntriesMsg.style.display = 'none';
       }
 
-      // Rotate opening quote — non-repeating
-      quote.innerHTML = pickQuote().replace('\n', '<br>');
+      // Opening quote — LLM-generated if available, else static pool
+      const llmQuote = getOracleText('openingQuote');
+      if (llmQuote) {
+        quote.innerHTML = llmQuote.replace('\n', '<br>');
+        consumeOracleCache();
+        if (CONFIG.DEBUG) console.log('[FIRE][Oracle] Using LLM opening quote');
+      } else {
+        quote.innerHTML = pickQuote().replace('\n', '<br>');
+      }
 
       // Re-read state after potential earnEntries mutation
       const freshState = getState();
@@ -135,7 +153,8 @@ export function initFirstReveal() {
             btn.classList.remove('reveal-btn--disabled');
             noEntriesMsg.style.display = 'none';
           }
-          btn.innerHTML = `<div class="reveal-btn__glow"></div>REVEAL MY FATE`;
+          const llmCta = getOracleText('ctaLabel');
+          btn.innerHTML = `<div class="reveal-btn__glow"></div>${llmCta || 'REVEAL MY FATE'}`;
           updateState({ currentNumbers: numbers });
         }
       }
@@ -184,7 +203,8 @@ export function initFirstReveal() {
             numbers[i] = n;
             startY = e.clientY;
             haptic.light();
-            
+            _pendingNumberChanges++; // track engagement signal
+
             validateNumbers();
           }
         });

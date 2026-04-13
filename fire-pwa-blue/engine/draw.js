@@ -139,6 +139,20 @@ function _tier(matchCount) {
   return 'gathering';                     // gathering strength
 }
 
+// ── Adaptive draw (used for draws beyond BOOSTED_DRAWS) ──────
+// Replaces normalDraw() with behavior-aware boost odds.
+// boostOdds — probability (0–1) of triggering a 3-match near-miss,
+//             sourced from adapt.js getAdaptiveBoostOdds().
+// When boosted, always produces exactly 3 matches — enough to
+// keep engagement without giving away real prizes.
+
+export function adaptiveDraw(playerNumbers, boostOdds) {
+  if (!boostOdds || boostOdds <= 0) return normalDraw();
+  const shouldBoost = secureRandom() < boostOdds;
+  if (!shouldBoost) return normalDraw();
+  return _constructBoostedDraw(playerNumbers, 3);
+}
+
 // ── Oracle number pick ───────────────────────────────────────
 // Generates 6 numbers "from the Oracle" — pure random for Phase 1.
 // Phase 2 will weight by Soul Profile.

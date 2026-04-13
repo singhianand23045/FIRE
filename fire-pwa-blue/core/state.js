@@ -65,6 +65,19 @@ function defaultState() {
     sessionId: null,
     sessionStartAt: null,
     sessionDrawCount: 0,
+
+    // ── Engagement signals (adaptive gameplay) ─────────────
+    // One entry per completed draw: { drawId, numberChanges, resultDwellMs, at }
+    // Kept to last 10. Written by result.js onExit.
+    engagementSignals: [],
+    // Scratch field — reset on first-reveal entry, incremented per drag change,
+    // read by result.js onExit when building the signal for the just-completed draw.
+    pendingNumberChanges: 0,
+
+    // ── Oracle LLM mood engine ────────────────────────────
+    mood: 'casual',            // 'casual' | 'warming' | 'serious' | 'focused'
+    moodHistory: [],           // last 20 mood values
+    oracleCache: null,         // { mood, texts: {...}, params: {...}, fetchedAt, consumed }
   };
 }
 
@@ -171,6 +184,27 @@ function migrateLegacy(old) {
     firstDrawDone: old.firstDrawDone || false,
     // Welcome grant will fire again since firstOpen defaults to true
   };
+}
+
+// ── Record engagement signal ─────────────────────────────────
+// Called by result.js onExit after each draw.
+// drawId        — state.drawCount at time of the draw
+// numberChanges — how many times the player changed a number
+// resultDwellMs — ms spent reading the result screen
+export function recordEngagementSignal({ drawId, numberChanges, resultDwellMs }) {
+  if (!_state) loadState();
+  const signal = {
+    drawId,
+    numberChanges: numberChanges || 0,
+    resultDwellMs: resultDwellMs || 0,
+    at: Date.now(),
+  };
+  _state.engagementSignals = [...(_state.engagementSignals || []), signal].slice(-10);
+  _state.pendingNumberChanges = 0; // reset scratch field
+  _persist();
+  if (CONFIG.DEBUG) {
+    console.log(`[FIRE][Adapt] Signal recorded — draw ${drawId}, changes: ${signal.numberChanges}, dwell: ${signal.resultDwellMs}ms`);
+  }
 }
 
 // ── Reset (for testing / settings screen) ───────────────────

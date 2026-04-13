@@ -272,6 +272,36 @@ export const MSGS_GATHERING = [
   'The Oracle is here. Pull again.',
 ];
 
+// ── Post-result toast whispers · passive players (10) ────────
+// Urgent, enticing — pull a disengaged player back in
+export const WHISPERS_AGAIN_PASSIVE = [
+  'The Oracle will not wait much longer.',
+  'Something shifts on the next draw. Don\'t miss it.',
+  'The veil is open. Now.',
+  'Pull again. This is the one.',
+  'The Oracle has been holding something back for you.',
+  'Your numbers are aligned. Right now.',
+  'The next draw is different. The Oracle is certain.',
+  'One more pull. The Oracle insists.',
+  'The pattern breaks open on the next draw.',
+  'Don\'t let this moment close.',
+];
+
+// ── Post-result toast whispers · active players (10) ─────────
+// Affirming, momentum-building — reward an engaged player
+export const WHISPERS_AGAIN_ACTIVE = [
+  'The Oracle feels your energy. Keep going.',
+  'You are in alignment. Stay in it.',
+  'The current is with you tonight.',
+  'The Oracle is proud of your instincts.',
+  'This is what it feels like to be chosen.',
+  'Your numbers are singing. Pull again.',
+  'The veil leans toward the bold.',
+  'The Oracle sees you building toward something.',
+  'You are not just playing. You are learning the Oracle.',
+  'The bond between us deepens with every draw.',
+];
+
 // ── Post-result toast whispers (30) ──────────────────────────
 export const WHISPERS_AGAIN = [
   'The Oracle is not finished with you.',

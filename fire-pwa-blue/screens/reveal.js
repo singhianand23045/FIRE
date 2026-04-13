@@ -6,7 +6,8 @@
 
 import { registerScreen, goto } from '../core/router.js';
 import { getState, recordDraw } from '../core/state.js';
-import { boostedDraw, normalDraw, computeNearMisses, scoreDraw } from '../engine/draw.js';
+import { boostedDraw, normalDraw, adaptiveDraw, computeNearMisses, scoreDraw } from '../engine/draw.js';
+import { getAdaptiveBoostOdds, classifyEngagement } from '../engine/adapt.js';
 import { haptic, playSound } from '../core/device.js';
 import { playTone, startAmbient, stopAmbient } from '../engine/audio.js';
 import {
@@ -18,6 +19,7 @@ import { whisper } from '../components/toast.js';
 import { CONFIG } from '../config.js';
 import { getDevForceMatches, _constructForcedDraw } from './devmode.js';
 import { evt_drawResult } from '../core/analytics.js';
+import { getOracleText, getOracleParams } from '../engine/oracle-llm.js';
 
 // ── Non-repeating random picker ──────────────────────────────
 const _usedIndices = {};
@@ -35,7 +37,7 @@ export function initReveal() {
 
   // ── Build static DOM ─────────────────────────────────────
   el.innerHTML = `
-    <div class="reveal__header">The Oracle Speaks</div>
+    <div class="reveal__header" id="reveal-header">The Oracle Speaks</div>
 
     <div class="reveal__your-numbers" id="reveal-player-nums"></div>
 
@@ -48,6 +50,7 @@ export function initReveal() {
     <div class="reveal__progress" id="reveal-progress"></div>
   `;
 
+  const headerEl = el.querySelector('#reveal-header');
   const playerNumsEl = el.querySelector('#reveal-player-nums');
   const drawAreaEl = el.querySelector('#reveal-draw-area');
   const whisperEl = el.querySelector('#reveal-whisper');
@@ -70,11 +73,19 @@ export function initReveal() {
       const forcedMatches = getDevForceMatches();
       const isBoostDraw = drawNum <= CONFIG.BOOSTED_DRAWS;
 
+      const engagement = classifyEngagement();
+
+      // LLM-driven boost odds take priority, then heuristic adapt, then boosted draw
+      const llmParams = getOracleParams();
+      const boostOdds = llmParams?.boostOdds ?? getAdaptiveBoostOdds();
+
       const drawn = (forcedMatches !== null)
         ? _constructForcedDraw(numbers, forcedMatches)
         : isBoostDraw
           ? boostedDraw(numbers, drawNum - 1)
-          : normalDraw();
+          : adaptiveDraw(numbers, boostOdds);
+
+      if (CONFIG.DEBUG) console.log(`[FIRE][Adapt] Draw ${drawNum} — engagement: ${engagement}, boost: ${!isBoostDraw ? boostOdds.toFixed(2) : 'boosted'}, source: ${llmParams ? 'LLM' : 'heuristic'}`);
 
       const score = scoreDraw(numbers, drawn, 0, 1);
       const nearMiss = computeNearMisses(numbers, drawn);
@@ -149,8 +160,14 @@ export function initReveal() {
       }
       */
 
-      // ── Set initial whisper ───────────────────────────
-      whisperEl.textContent = pickUnique(WHISPERS_OPENING, 'opening');
+      // ── Set header (LLM or default) ────────────────────
+      const llmHeader = getOracleText('revealHeader');
+      if (llmHeader) headerEl.textContent = llmHeader;
+      else headerEl.textContent = 'The Oracle Speaks';
+
+      // ── Set initial whisper (LLM or static pool) ──────
+      const llmWhisper = getOracleText('revealWhisper');
+      whisperEl.textContent = llmWhisper || pickUnique(WHISPERS_OPENING, 'opening');
 
       // ── Start ambient drone ───────────────────────────
       startAmbient();
