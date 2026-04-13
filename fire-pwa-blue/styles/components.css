@@ -85,6 +85,17 @@
     inset 0 0 12px rgba(255, 255, 255, 0.05);
 }
 
+/* Oracle reaction nudge — brief pulse when Oracle changes a ball */
+.num-ball--player.oracle-nudge {
+  animation: oracleNudge 0.5s var(--ease-spring);
+}
+
+@keyframes oracleNudge {
+  0%   { transform: scale(1);    border-color: var(--gold); }
+  35%  { transform: scale(1.18); border-color: #fff; }
+  100% { transform: scale(1);    border-color: var(--gold); }
+}
+
 .num-ball--player.is-matched,
 .num-ball--player.is-matched-d1 {
   background: var(--color-d1-dim);

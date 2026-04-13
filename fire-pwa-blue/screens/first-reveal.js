@@ -135,13 +135,20 @@ export function initFirstReveal() {
   let _pendingNumberChanges = 0;
   let _screenEnterAt = 0;
 
+  // ── Oracle reaction: one ball shifts when the player changes a number
+  // Each ball registers a setNumber() so the Oracle can reach into its closure.
+  let _oracleReacted = false;
+  const _ballRefs = [];
+
   // ── Register ─────────────────────────────────────────────
   registerScreen({
     id: 'first-reveal',
     el,
     onEnter() {
-      _pendingNumberChanges = 0; // reset per game
+      _pendingNumberChanges = 0; // reset per draw
       _screenEnterAt = Date.now();
+      _oracleReacted = false;
+      _ballRefs.length = 0;
       const state = getState();
 
       // Top-up grant whenever user can't afford a game
@@ -213,6 +220,12 @@ export function initFirstReveal() {
         ball.style.touchAction = 'none';
         ball.style.cursor = 'ns-resize';
 
+        // Register so Oracle reaction can update this ball from another closure
+        _ballRefs[i] = {
+          el: ball,
+          setNumber(v) { n = v; numbers[i] = v; ball.textContent = v; },
+        };
+
         let startY = 0;
         let isDragging = false;
         let didSwipe = false;
@@ -245,6 +258,35 @@ export function initFirstReveal() {
             startY = e.clientY;
             haptic.light();
             _pendingNumberChanges++; // track engagement signal
+
+            // ── Oracle reaction: shift one ball to the right (once per draw)
+            if (!_oracleReacted) {
+              _oracleReacted = true;
+              // Pick target: rightmost wraps to leftmost, else random from the right
+              let targetIdx;
+              if (i === numbers.length - 1) {
+                targetIdx = 0;
+              } else {
+                const rightSlots = [];
+                for (let j = i + 1; j < numbers.length; j++) rightSlots.push(j);
+                targetIdx = rightSlots[Math.floor(Math.random() * rightSlots.length)];
+              }
+              // New random number (different from current)
+              let newNum;
+              do { newNum = Math.floor(Math.random() * CONFIG.DRAW_POOL_SIZE) + 1; }
+              while (newNum === numbers[targetIdx]);
+
+              // Short delay so the player sees their own change first
+              setTimeout(() => {
+                if (_ballRefs[targetIdx]) {
+                  _ballRefs[targetIdx].setNumber(newNum);
+                  _ballRefs[targetIdx].el.classList.add('oracle-nudge');
+                  setTimeout(() => _ballRefs[targetIdx].el.classList.remove('oracle-nudge'), 600);
+                  haptic.light();
+                  validateNumbers();
+                }
+              }, 350);
+            }
 
             validateNumbers();
           }
