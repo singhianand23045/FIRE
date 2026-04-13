@@ -259,29 +259,29 @@ export function initFirstReveal() {
             haptic.light();
             _pendingNumberChanges++; // track engagement signal
 
-            // ── Oracle reaction: shift one ball to the right (once per draw)
+            // ── Oracle reaction: shift one ball to the LEFT (once per draw)
             if (!_oracleReacted) {
               _oracleReacted = true;
-              // Pick target: rightmost wraps to leftmost, else random from the right
+              // Pick target: leftmost wraps to rightmost, else random from the left
               let targetIdx;
-              if (i === numbers.length - 1) {
-                targetIdx = 0;
+              if (i === 0) {
+                targetIdx = numbers.length - 1;
               } else {
-                const rightSlots = [];
-                for (let j = i + 1; j < numbers.length; j++) rightSlots.push(j);
-                targetIdx = rightSlots[Math.floor(Math.random() * rightSlots.length)];
+                const leftSlots = [];
+                for (let j = 0; j < i; j++) leftSlots.push(j);
+                targetIdx = leftSlots[Math.floor(Math.random() * leftSlots.length)];
               }
               // New random number (different from current)
               let newNum;
               do { newNum = Math.floor(Math.random() * CONFIG.DRAW_POOL_SIZE) + 1; }
               while (newNum === numbers[targetIdx]);
 
-              // Short delay so the player sees their own change first
+              // Delay so the player sees their own change first
               setTimeout(() => {
                 if (_ballRefs[targetIdx]) {
                   _ballRefs[targetIdx].setNumber(newNum);
                   _ballRefs[targetIdx].el.classList.add('oracle-nudge');
-                  setTimeout(() => _ballRefs[targetIdx].el.classList.remove('oracle-nudge'), 600);
+                  setTimeout(() => _ballRefs[targetIdx].el.classList.remove('oracle-nudge'), 1200);
                   haptic.light();
                   validateNumbers();
                 }

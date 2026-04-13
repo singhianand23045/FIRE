@@ -85,15 +85,16 @@
     inset 0 0 12px rgba(255, 255, 255, 0.05);
 }
 
-/* Oracle reaction nudge — brief pulse when Oracle changes a ball */
+/* Oracle reaction nudge — slow pulse when Oracle changes a ball */
 .num-ball--player.oracle-nudge {
-  animation: oracleNudge 0.5s var(--ease-spring);
+  animation: oracleNudge 1.1s ease-in-out;
 }
 
 @keyframes oracleNudge {
-  0%   { transform: scale(1);    border-color: var(--gold); }
-  35%  { transform: scale(1.18); border-color: #fff; }
-  100% { transform: scale(1);    border-color: var(--gold); }
+  0%   { transform: scale(1);    border-color: var(--gold);  box-shadow: 0 0 12px rgba(255,255,255,0.15); }
+  20%  { transform: scale(1.22); border-color: #fff;         box-shadow: 0 0 24px rgba(255,255,255,0.4); }
+  50%  { transform: scale(1.12); border-color: #fff;         box-shadow: 0 0 18px rgba(255,255,255,0.3); }
+  100% { transform: scale(1);    border-color: var(--gold);  box-shadow: 0 0 12px rgba(255,255,255,0.15); }
 }
 
 .num-ball--player.is-matched,
