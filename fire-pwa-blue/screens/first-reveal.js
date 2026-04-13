@@ -300,11 +300,14 @@ export function initFirstReveal() {
                 for (let j = 0; j < i; j++) leftSlots.push(j);
                 targetIdx = leftSlots[Math.floor(Math.random() * leftSlots.length)];
               }
-              // New random number (not already in the set)
+              // Soul-profile-aware number (falls back to random if no profile)
               const usedNums = new Set(numbers);
-              let newNum;
-              do { newNum = Math.floor(Math.random() * CONFIG.DRAW_POOL_SIZE) + 1; }
-              while (usedNums.has(newNum));
+              const candidates = oraclePick(getState().soulProfile);
+              let newNum = candidates.find(num => !usedNums.has(num));
+              if (!newNum) {
+                do { newNum = Math.floor(Math.random() * CONFIG.DRAW_POOL_SIZE) + 1; }
+                while (usedNums.has(newNum));
+              }
 
               // Delay so the player sees their own change first
               setTimeout(() => {

@@ -35,15 +35,15 @@ function pickUnique(arr, key) {
 // ── Draw pacing: mirrors pre-draw player behavior ────────────
 // Rushed players get a fast, brisk draw. Invested players get
 // longer dramatic pauses between each ball.
-// Returns a multiplier: 0.7 (fast) → 1.0 (default) → 1.25 (slow).
+// Returns a multiplier: 0.7 (fast) → 1.0 (default) → 1.1 (slow).
 function computeDrawPace(numberChanges, dwellMs) {
   const dwellSec = (dwellMs || 0) / 1000;
   // Investment score: 0 (rushed) → 1 (deeply invested)
   const changeScore = Math.min(numberChanges / 5, 1);   // 5 changes = max
   const dwellScore = Math.min(dwellSec / 10, 1);        // 10s dwell = max
   const investment = (changeScore + dwellScore) / 2;
-  // Map to pace multiplier
-  return 0.7 + investment * 0.55;
+  // Map to pace multiplier (capped at 1.1x ≈ 28s draw)
+  return 0.7 + investment * 0.4;
 }
 
 export function initReveal() {
