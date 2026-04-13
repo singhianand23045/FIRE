@@ -31,6 +31,22 @@ export function initFirstReveal() {
   const el = document.getElementById('screen-first-reveal');
 
   // ── Build DOM ─────────────────────────────────────────────
+  // Background pulse overlay — gravitational light shift on number change
+  const bgPulse = document.createElement('div');
+  bgPulse.className = 'first-reveal__bg-pulse';
+  el.appendChild(bgPulse);
+
+  function pulseBackground(ballEl) {
+    const rect = ballEl.getBoundingClientRect();
+    const screenRect = el.getBoundingClientRect();
+    const xPct = ((rect.left + rect.width / 2 - screenRect.left) / screenRect.width) * 100;
+    const yPct = ((rect.top + rect.height / 2 - screenRect.top) / screenRect.height) * 100;
+    bgPulse.style.background = `radial-gradient(ellipse at ${xPct}% ${yPct}%, rgba(70, 120, 40, 0.45) 0%, transparent 45%)`;
+    bgPulse.classList.remove('is-active');
+    void bgPulse.offsetWidth; // force reflow to restart animation
+    bgPulse.classList.add('is-active');
+  }
+
   const eyeWrap = document.createElement('div');
   eyeWrap.className = 'first-reveal__eyewrap';
   eyeWrap.appendChild(createOracleEye('md'));
@@ -270,6 +286,7 @@ export function initFirstReveal() {
             startY = e.clientY;
             haptic.light();
             _pendingNumberChanges++; // track engagement signal
+            pulseBackground(ball); // gravitational light shift
 
             // ── Oracle reaction: shift one ball to the LEFT (once per draw)
             if (!_oracleReacted) {

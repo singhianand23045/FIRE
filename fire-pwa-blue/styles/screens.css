@@ -166,6 +166,36 @@
   gap: var(--s2);
 }
 
+/* Background pulse overlay — gravitational light shift on number change */
+.first-reveal__bg-pulse {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+}
+
+.first-reveal__bg-pulse.is-active {
+  animation: bgPulse 0.8s ease-out both;
+}
+
+@keyframes bgPulse {
+  0%   { opacity: 0; }
+  12%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Ensure content stacks above the pulse overlay */
+.first-reveal__eyewrap,
+.first-reveal__quote,
+.first-reveal__numbers,
+.first-reveal__swipe-hint,
+.first-reveal__cta,
+.first-reveal__profile-link {
+  position: relative;
+  z-index: 1;
+}
+
 .first-reveal__eyewrap {
   margin-bottom: var(--s6);
 }
