@@ -181,7 +181,7 @@ export function initResult() {
       if (totalMoney > 0) parts.push(`+${_fmtMoney(totalMoney)}`);
       celebLine = parts.length > 0
         ? parts.join(' · ')
-        : 'The Oracle watches. Your time is coming.';
+        : 'The Oracle watches. Your time comes.';
     }
 
     return `
@@ -242,14 +242,18 @@ export function initResult() {
       // ── Oracle eye state ────────────────────────────────
       setOracleEyeWin(eye, matchCount >= 4);
 
-      // ── Tier label ──────────────────────────────────────
-      tierLabelEl.textContent = TIER_LABELS[tier] ?? 'The Oracle Speaks';
+      // ── Tier label (LLM or static) ─────────────────────
+      const llmTierLabel = getOracleText('tierLabel');
+      tierLabelEl.textContent = llmTierLabel || TIER_LABELS[tier] || 'The Oracle Speaks';
 
       // ── Score number ────────────────────────────────────
       scoreEl.textContent = matchCount;
 
-      // ── 3. Score sub-line ───────────────────────────────
-      if (prize.money > 0) {
+      // ── 3. Score sub-line (LLM or static) ───────────────
+      const llmScoreSub = getOracleText('scoreSub');
+      if (llmScoreSub) {
+        scoreSubEl.textContent = llmScoreSub;
+      } else if (prize.money > 0) {
         scoreSubEl.textContent = `${matchCount} ${matchCount === 1 ? 'Match' : 'Matches'} · +${_fmtMoney(prize.money)}`;
       } else if (prize.entries > 0) {
         scoreSubEl.textContent = `${matchCount} ${matchCount === 1 ? 'Match' : 'Matches'} · +${prize.entries} entries`;
@@ -324,7 +328,9 @@ export function initResult() {
         } else {
           // Binge-play auto-start countdown — duration adapts to engagement
           let countdownValue = adaptParams.newGameCountdownSecs;
-          againBtn.textContent = `NEXT GAME IN ${countdownValue}...`;
+          const countdownTpl = getOracleText('countdownLabel') || 'NEXT IN {n}...';
+          const _fmtCountdown = (n) => countdownTpl.replace('{n}', n);
+          againBtn.textContent = _fmtCountdown(countdownValue);
 
           const _tickCountdown = () => {
             const overlayOpen = document.querySelector('.wallet-panel--visible') ||
@@ -334,7 +340,7 @@ export function initResult() {
             if (!overlayOpen && !isSummaryOpen) {
               countdownValue--;
               if (countdownValue > 0) {
-                againBtn.textContent = `NEXT GAME IN ${countdownValue}...`;
+                againBtn.textContent = _fmtCountdown(countdownValue);
               } else {
                 againBtn.textContent = `STARTING...`;
                 haptic.medium();
@@ -393,9 +399,10 @@ export function initResult() {
       // ── Ritual invitation ────────────────────────────────
       if (freshState.ritualTriggered && !freshState.ritualComplete) {
         ritualInviteEl.style.display = '';
+        const llmRitualInvite = getOracleText('ritualInvite');
         ritualInviteEl.innerHTML = `
           <div class="result__ritual-oracle-text">
-            Before we go further… I need to know you.
+            ${llmRitualInvite || 'I need to know you.'}
           </div>
           <button class="result__ritual-btn" id="result-ritual-cta">THE ORACLE AWAITS →</button>
         `;
@@ -474,20 +481,20 @@ export function initResult() {
     const { matchCount } = _params.score ?? { matchCount: 0 };
 
     if (!nearMissData || matchCount === 0) {
-      return 'The Oracle gathers strength from this exchange. Your numbers are circling closer.';
+      return 'Your numbers circle closer.';
     }
 
     const veryClose = nearMissData.nearMisses.filter(nm => nm.proximity === 'very_close');
     if (veryClose.length > 0) {
       const nm = veryClose[0];
-      return `<strong>${nm.playerNumber}</strong> and <strong>${nm.drawnNumber}</strong> · separated by just ${nm.distance}. The veil trembles.`;
+      return `<strong>${nm.playerNumber}</strong> brushed <strong>${nm.drawnNumber}</strong>. The veil felt it.`;
     }
 
     const close = nearMissData.nearMisses.filter(nm => nm.proximity === 'close');
     if (close.length >= 2) {
-      return `Two numbers nearly crossed the veil. The Oracle felt the pull.`;
+      return `Two numbers nearly crossed.`;
     }
 
-    return `The Oracle watched your numbers closely. The pattern is forming.`;
+    return `The pattern is forming.`;
   }
 }

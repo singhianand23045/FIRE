@@ -61,14 +61,18 @@ Return ONLY valid JSON with this exact structure:
 {
   "mood": "casual|warming|serious|focused",
   "texts": {
-    "openingQuote": "6 words ideal. 10 max. 1 line only. e.g. 'The Oracle found these for you.'",
-    "ctaLabel": "2-4 words + arrow. e.g. 'PULL →' or 'AGAIN →' or 'DRAW →'",
+    "openingQuote": "6 words ideal. 10 max. e.g. 'The Oracle found these for you.'",
+    "ctaLabel": "2-4 words + arrow. e.g. 'PULL →' or 'AGAIN →'",
     "revealWhisper": "3-6 words. e.g. 'The veil lifts.'",
-    "oracleMessage": "6 words ideal. 10 max. 1 line only. e.g. 'Three bonds. The Oracle trembles.'",
+    "revealHeader": "2-4 words. e.g. 'THE ORACLE SPEAKS' or 'THE VEIL PARTS'",
+    "oracleMessage": "6 words ideal. 10 max. e.g. 'Three bonds. The Oracle trembles.'",
+    "tierLabel": "2-4 words. e.g. 'The Oracle Blazes' or 'Gathering Strength'",
+    "scoreSub": "6 words max. e.g. '3 Matches · +60 entries' — include match count and prize if provided.",
     "resultWhisper": "4-7 words. e.g. 'Something shifts next draw.'",
-    "nearMissNarrative": "6 words ideal. 10 max. Reference numbers. e.g. '14 brushed 15. The veil felt it.'",
+    "nearMissNarrative": "6 words ideal. 10 max. Reference numbers. e.g. '14 brushed 15.'",
     "gameSummaryLine": "6 words ideal. 10 max. e.g. 'The Oracle learned from this.'",
-    "revealHeader": "2-4 words. e.g. 'THE ORACLE SPEAKS' or 'THE VEIL PARTS'"
+    "ritualInvite": "6 words max. e.g. 'I need to know you.'",
+    "countdownLabel": "3 words + number. e.g. 'NEXT IN {n}...' — use {n} as placeholder for countdown number."
   },
   "params": {
     "boostOdds": 0.30,
