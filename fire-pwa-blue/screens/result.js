@@ -308,8 +308,8 @@ export function initResult() {
 
         drawAreaEl.innerHTML = _buildGameEndHTML(freshState.gameResults, jackpot);
         actionsEl.style.display = '';
-        pickLink.style.display = '';
-        pickLink.textContent = 'Pick different numbers';
+        // pickLink hidden — users now discover number changing via swipe hint
+        pickLink.style.display = 'none';
 
         // Wire summary toggle
         const toggle = el.querySelector('#game-summary-toggle');
