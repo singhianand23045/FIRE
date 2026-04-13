@@ -32,6 +32,20 @@ function pickUnique(arr, key) {
   return arr[idx];
 }
 
+// ── Draw pacing: mirrors pre-draw player behavior ────────────
+// Rushed players get a fast, brisk draw. Invested players get
+// longer dramatic pauses between each ball.
+// Returns a multiplier: 0.7 (fast) → 1.0 (default) → 1.25 (slow).
+function computeDrawPace(numberChanges, dwellMs) {
+  const dwellSec = (dwellMs || 0) / 1000;
+  // Investment score: 0 (rushed) → 1 (deeply invested)
+  const changeScore = Math.min(numberChanges / 5, 1);   // 5 changes = max
+  const dwellScore = Math.min(dwellSec / 10, 1);        // 10s dwell = max
+  const investment = (changeScore + dwellScore) / 2;
+  // Map to pace multiplier
+  return 0.7 + investment * 0.55;
+}
+
 export function initReveal() {
   const el = document.getElementById('screen-reveal');
 
@@ -172,8 +186,13 @@ export function initReveal() {
       // ── Start ambient drone ───────────────────────────
       startAmbient();
 
+      // ── Compute draw pacing from pre-draw behavior ────
+      const pace = computeDrawPace(state.pendingNumberChanges || 0, state.preDrawDwellMs || 0);
+      if (CONFIG.DEBUG) console.log(`[FIRE][Adapt] Draw pace: ${pace.toFixed(2)}x (${state.pendingNumberChanges || 0} changes, ${Math.round((state.preDrawDwellMs || 0) / 1000)}s dwell)`);
+
       // ── Animate balls dropping ────────────────────────
-      const dropTimes = [1500, 4000, 7200, 11200, 16200, 22200];
+      const BASE_DROP_TIMES = [1500, 4000, 7200, 11200, 16200, 22200];
+      const dropTimes = BASE_DROP_TIMES.map(t => Math.round(t * pace));
       let matchCountSoFar = 0;
 
       const MATCH_WHISPER_POOLS = [
@@ -238,12 +257,15 @@ export function initReveal() {
         }, dropTimes[i]);
       });
 
-      // ── Final dramatic pause then result ─────────────
+      // ── Final dramatic pause then result (paced) ─────
+      const pauseTime = Math.round(24200 * pace);
+      const resultTime = Math.round(25700 * pace);
+
       setTimeout(() => {
         whisperEl.textContent = pickUnique(WHISPERS_FINAL_PAUSE, 'final_pause');
         haptic.heavy();
         playTone('pause');
-      }, 24200);
+      }, pauseTime);
 
       setTimeout(() => {
         // Record draw
@@ -263,7 +285,7 @@ export function initReveal() {
           score,
           nearMissData: nearMiss,
         });
-      }, 25700);
+      }, resultTime);
     },
 
     onExit() {

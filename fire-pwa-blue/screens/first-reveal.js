@@ -113,9 +113,13 @@ export function initFirstReveal() {
     evt_revealTapped(state.drawCount + 1);
     btn.classList.add('reveal-btn--disabled');
 
-    // Flush number-change count to state before leaving this screen.
-    // result.js onExit reads this to build the engagement signal.
-    updateState({ pendingNumberChanges: _pendingNumberChanges });
+    // Flush pre-draw signals to state before leaving this screen.
+    // reveal.js reads these to pace the draw animation.
+    // result.js onExit reads pendingNumberChanges for the engagement signal.
+    updateState({
+      pendingNumberChanges: _pendingNumberChanges,
+      preDrawDwellMs: Date.now() - _screenEnterAt,
+    });
 
     // Deduct entries and start game if not already active
     if (!state.gameActive) {
@@ -125,10 +129,11 @@ export function initFirstReveal() {
     goto('reveal');
   });
 
-  // ── Engagement: number-change counter ────────────────────
+  // ── Engagement: number-change counter + dwell tracking ───
   // Counts how many distinct number changes the player makes
   // before tapping Draw. Reset on every screen entry.
   let _pendingNumberChanges = 0;
+  let _screenEnterAt = 0;
 
   // ── Register ─────────────────────────────────────────────
   registerScreen({
@@ -136,6 +141,7 @@ export function initFirstReveal() {
     el,
     onEnter() {
       _pendingNumberChanges = 0; // reset per game
+      _screenEnterAt = Date.now();
       const state = getState();
 
       // Top-up grant whenever user can't afford a game

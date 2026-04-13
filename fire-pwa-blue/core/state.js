@@ -73,6 +73,9 @@ function defaultState() {
     // Scratch field — reset on first-reveal entry, incremented per drag change,
     // read by result.js onExit when building the signal for the just-completed draw.
     pendingNumberChanges: 0,
+    // Dwell time on first-reveal before tapping Draw (ms).
+    // Written by first-reveal.js tap handler, read by reveal.js for pacing.
+    preDrawDwellMs: 0,
 
     // ── Oracle LLM mood engine ────────────────────────────
     mood: 'casual',            // 'casual' | 'warming' | 'serious' | 'focused'
