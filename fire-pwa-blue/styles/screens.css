@@ -202,6 +202,25 @@
   opacity: 1;
 }
 
+/* Swipe-to-change hint — appears on first ball tap, dismissed after first swipe */
+.first-reveal__swipe-hint {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--gold);
+  opacity: 0;
+  text-align: center;
+  margin-top: calc(-1 * var(--s8));
+  margin-bottom: calc(-1 * var(--s2));
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+
+.first-reveal__swipe-hint.is-visible {
+  opacity: 0.6;
+}
+
 .first-reveal__cta {
   opacity: 0;
 }

@@ -57,6 +57,36 @@ export function initFirstReveal() {
   noEntriesMsg.style.display = 'none';
   ctaWrap.appendChild(noEntriesMsg);
 
+  // Swipe-to-change hint — shown once on first tap, dismissed after first swipe
+  const swipeHint = document.createElement('div');
+  swipeHint.className = 'first-reveal__swipe-hint';
+  swipeHint.textContent = 'swipe to change';
+
+  let _hintDismissed = localStorage.getItem('fire_swipe_hint') === '1';
+  let _hintVisible = false;
+  let _hintTimeout = null;
+
+  function showSwipeHint() {
+    if (_hintDismissed || _hintVisible) return;
+    _hintVisible = true;
+    swipeHint.classList.add('is-visible');
+    _hintTimeout = setTimeout(() => {
+      swipeHint.classList.remove('is-visible');
+      _hintVisible = false;
+    }, 2000);
+  }
+
+  function dismissSwipeHint() {
+    if (_hintDismissed) return;
+    _hintDismissed = true;
+    localStorage.setItem('fire_swipe_hint', '1');
+    if (_hintVisible) {
+      swipeHint.classList.remove('is-visible');
+      _hintVisible = false;
+      clearTimeout(_hintTimeout);
+    }
+  }
+
   const profileLink = document.createElement('div');
   profileLink.className = 'first-reveal__profile-link';
   profileLink.style.display = 'none';
@@ -68,6 +98,7 @@ export function initFirstReveal() {
   el.appendChild(eyeWrap);
   el.appendChild(quote);
   el.appendChild(numbersRow);
+  el.appendChild(swipeHint);
   el.appendChild(ctaWrap);
   el.appendChild(profileLink);
 
@@ -179,9 +210,11 @@ export function initFirstReveal() {
 
         let startY = 0;
         let isDragging = false;
+        let didSwipe = false;
 
         ball.addEventListener('pointerdown', (e) => {
           isDragging = true;
+          didSwipe = false;
           startY = e.clientY;
           ball.setPointerCapture(e.pointerId);
         });
@@ -190,6 +223,9 @@ export function initFirstReveal() {
           if (!isDragging) return;
           const deltaY = e.clientY - startY;
           if (Math.abs(deltaY) > 30) {
+            didSwipe = true;
+            dismissSwipeHint();
+
             if (deltaY < 0) {
               n++;
             } else {
@@ -198,7 +234,7 @@ export function initFirstReveal() {
             // wrap bounds
             if (n > CONFIG.DRAW_POOL_SIZE) n = 1;
             if (n < 1) n = CONFIG.DRAW_POOL_SIZE;
-            
+
             ball.textContent = n;
             numbers[i] = n;
             startY = e.clientY;
@@ -209,7 +245,12 @@ export function initFirstReveal() {
           }
         });
 
-        const stopDrag = () => { isDragging = false; };
+        const stopDrag = () => {
+          if (isDragging && !didSwipe) {
+            showSwipeHint();
+          }
+          isDragging = false;
+        };
         ball.addEventListener('pointerup', stopDrag);
         ball.addEventListener('pointercancel', stopDrag);
 

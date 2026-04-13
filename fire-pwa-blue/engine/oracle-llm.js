@@ -62,7 +62,7 @@ export function callOracle(triggerPoint, extra = {}) {
 
   // On localhost, proxy to Vercel since local static server has no /api
   const baseUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-    ? 'https://fire-63rv0q0hs-anand-singhis-projects.vercel.app'
+    ? 'https://fire-q9nyl29w9-anand-singhis-projects.vercel.app'
     : '';
   const endpoint = baseUrl + (CONFIG.ORACLE_API_URL || '/api/oracle');
 
