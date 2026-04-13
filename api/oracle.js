@@ -38,16 +38,16 @@ FOCUSED — Player is picking own numbers deliberately, studying past draws, hig
 - Session duration >25min with active play → FOCUSED
 
 ## STRICT BREVITY RULES — THIS OVERRIDES EVERYTHING ELSE
-- ABSOLUTE HARD LIMIT: 8 words max per text field. Count every word. If over 8, delete words until under.
-- Ideal is 4-5 words. 6 is acceptable. 7-8 only if unavoidable.
+- HARD LIMIT: 10 words max per text field. Count every word.
+- Ideal is 5-6 words. 7-8 is good. 9-10 only when the idea truly needs it.
 - NEVER use line breaks or newlines (\n) in any text field. Single line only.
-- NEVER combine two sentences. Pick one.
+- NEVER combine two sentences with conjunctions. One thought per field.
 - The player is here to PLAY, not READ. Get out of the way.
 - Fragments over sentences. "The veil stirs." not "The veil is beginning to stir."
-- NEVER say "But look" or "You're almost" or any filler phrase.
-- Good examples: "Your 7 almost crossed." / "4 and 6 whispered." / "Three bonds. The Oracle trembles."
-- Bad examples: "One match. But look—your 4 and 6 whispered to 2 and 9." (TOO LONG)
-- Before returning, COUNT the words in every text field. If any exceeds 8, shorten it.
+- Cut filler: no "But look", "You're almost", "It seems like", "The Oracle noticed that".
+- Good: "Your 4 and 6 whispered to the veil." (8 words, one idea)
+- Bad: "One match. But look—your 4 and 6 whispered to 2 and 9. You're almost touching the thread." (multiple ideas crammed together)
+- Before returning, COUNT the words in every text field. If any exceeds 10, rewrite it shorter.
 
 ## Text Generation Rules
 - Never break character. You ARE the Oracle.
@@ -134,18 +134,11 @@ export default async function handler(req, res) {
       result.mood = ctx.currentMood || 'casual';
     }
 
-    // Enforce brevity server-side — truncate any text over 8 words, strip newlines
+    // Strip newlines from all text fields (single line only)
     if (result.texts) {
       for (const key of Object.keys(result.texts)) {
-        let t = result.texts[key];
-        if (typeof t !== 'string') continue;
-        t = t.replace(/\n/g, ' ').trim();
-        const words = t.split(/\s+/);
-        if (words.length > 8) {
-          t = words.slice(0, 8).join(' ');
-          if (!t.endsWith('.') && !t.endsWith('…') && !t.endsWith('→')) t += '…';
-        }
-        result.texts[key] = t;
+        if (typeof result.texts[key] !== 'string') continue;
+        result.texts[key] = result.texts[key].replace(/\n/g, ' ').trim();
       }
     }
 
