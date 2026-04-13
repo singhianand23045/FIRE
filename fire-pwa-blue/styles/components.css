@@ -88,22 +88,22 @@
     transform 0.35s var(--ease-out), opacity 0.35s var(--ease-out);
 }
 
-/* Warming: gradual shift to amber while holding a ball (touch-and-hold) */
+/* Warming: gradual shift to muted amber while holding a ball */
 .num-ball--player.is-warming {
-  border-color: #E8A040;
-  color: #E8A040;
-  box-shadow: 0 0 20px rgba(232, 160, 64, 0.35),
-    inset 0 0 14px rgba(232, 160, 64, 0.1);
+  border-color: #C4A060;
+  color: #C4A060;
+  box-shadow: 0 0 14px rgba(196, 160, 96, 0.25),
+    inset 0 0 10px rgba(196, 160, 96, 0.08);
   transition: border-color 2s ease, color 2s ease, box-shadow 2s ease,
     transform 0.35s var(--ease-out), opacity 0.35s var(--ease-out);
 }
 
 /* Permanent warm: player chose this number (swiped to change it) */
 .num-ball--player.is-warm {
-  border-color: #E8A040;
-  color: #E8A040;
-  box-shadow: 0 0 20px rgba(232, 160, 64, 0.35),
-    inset 0 0 14px rgba(232, 160, 64, 0.1);
+  border-color: #C4A060;
+  color: #C4A060;
+  box-shadow: 0 0 14px rgba(196, 160, 96, 0.25),
+    inset 0 0 10px rgba(196, 160, 96, 0.08);
 }
 
 /* Oracle reaction nudge — slow pulse when Oracle changes a ball */

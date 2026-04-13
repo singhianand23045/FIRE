@@ -117,13 +117,18 @@ export function initReveal() {
       });
 
       // ── Render player numbers ──────────────────────────
+      const warmIndices = state.warmBallIndices || [];
       playerNumsEl.innerHTML = '';
-      numbers.forEach(n => {
+      numbers.forEach((n, idx) => {
         const b = document.createElement('div');
         b.className = 'num-ball num-ball--lg num-ball--player';
         if (historicalClasses[n] && historicalClasses[n].length > 0) {
           b.classList.add(...historicalClasses[n]);
           b.classList.add('is-static');
+        }
+        // Persist warmth from first-reveal — player-chosen numbers stay amber
+        if (warmIndices.includes(idx)) {
+          b.classList.add('is-warm');
         }
         b.id = `pnum-${n}`;
         b.textContent = n;

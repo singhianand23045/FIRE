@@ -76,6 +76,9 @@ function defaultState() {
     // Dwell time on first-reveal before tapping Draw (ms).
     // Written by first-reveal.js tap handler, read by reveal.js for pacing.
     preDrawDwellMs: 0,
+    // Indices of balls the player changed (warm amber).
+    // Written by first-reveal.js, read by reveal.js to persist warmth.
+    warmBallIndices: [],
 
     // ── Oracle LLM mood engine ────────────────────────────
     mood: 'casual',            // 'casual' | 'warming' | 'serious' | 'focused'

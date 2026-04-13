@@ -114,11 +114,16 @@ export function initFirstReveal() {
     btn.classList.add('reveal-btn--disabled');
 
     // Flush pre-draw signals to state before leaving this screen.
-    // reveal.js reads these to pace the draw animation.
+    // reveal.js reads these to pace the draw animation + persist ball warmth.
     // result.js onExit reads pendingNumberChanges for the engagement signal.
+    const warmIndices = [];
+    _ballRefs.forEach((ref, idx) => {
+      if (ref && ref.el.classList.contains('is-warm')) warmIndices.push(idx);
+    });
     updateState({
       pendingNumberChanges: _pendingNumberChanges,
       preDrawDwellMs: Date.now() - _screenEnterAt,
+      warmBallIndices: warmIndices,
     });
 
     // Deduct entries and start game if not already active
@@ -278,10 +283,11 @@ export function initFirstReveal() {
                 for (let j = 0; j < i; j++) leftSlots.push(j);
                 targetIdx = leftSlots[Math.floor(Math.random() * leftSlots.length)];
               }
-              // New random number (different from current)
+              // New random number (not already in the set)
+              const usedNums = new Set(numbers);
               let newNum;
               do { newNum = Math.floor(Math.random() * CONFIG.DRAW_POOL_SIZE) + 1; }
-              while (newNum === numbers[targetIdx]);
+              while (usedNums.has(newNum));
 
               // Delay so the player sees their own change first
               setTimeout(() => {
