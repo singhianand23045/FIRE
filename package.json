@@ -1,6 +1,7 @@
 {
   "name": "fire-pwa-root",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "cd fire-pwa-blue && npm run dev --",
     "build": "cd fire-pwa-blue && npm run build && cd .. && rm -rf public && cp -R fire-pwa-blue/dist public"
@@ -13,5 +14,8 @@
   "devDependencies": {
     "esbuild": "^0.27.4",
     "serve": "^14.2.4"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild", "protobufjs"]
   }
 }
