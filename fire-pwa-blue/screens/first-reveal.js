@@ -235,6 +235,10 @@ export function initFirstReveal() {
           didSwipe = false;
           startY = e.clientY;
           ball.setPointerCapture(e.pointerId);
+          // Start warming — gradual amber shift while holding
+          if (!ball.classList.contains('is-warm')) {
+            ball.classList.add('is-warming');
+          }
         });
 
         ball.addEventListener('pointermove', (e) => {
@@ -243,6 +247,9 @@ export function initFirstReveal() {
           if (Math.abs(deltaY) > 30) {
             didSwipe = true;
             dismissSwipeHint();
+            // Lock in warm — this is now the player's number
+            ball.classList.remove('is-warming');
+            ball.classList.add('is-warm');
 
             if (deltaY < 0) {
               n++;
@@ -295,6 +302,8 @@ export function initFirstReveal() {
         const stopDrag = () => {
           if (isDragging && !didSwipe) {
             showSwipeHint();
+            // Cool back — player didn't change this number
+            ball.classList.remove('is-warming');
           }
           isDragging = false;
         };
