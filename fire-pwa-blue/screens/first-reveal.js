@@ -57,12 +57,12 @@ export function initFirstReveal() {
   noEntriesMsg.style.display = 'none';
   ctaWrap.appendChild(noEntriesMsg);
 
-  // Swipe-to-change hint — shown once on first tap, dismissed after first swipe
+  // Swipe-to-change hint — shown on first tap each session, dismissed after first swipe
   const swipeHint = document.createElement('div');
   swipeHint.className = 'first-reveal__swipe-hint';
-  swipeHint.textContent = 'swipe to change';
+  swipeHint.textContent = 'swipe up to change';
 
-  let _hintDismissed = localStorage.getItem('fire_swipe_hint') === '1';
+  let _hintDismissed = false; // resets every session (page load)
   let _hintVisible = false;
   let _hintTimeout = null;
 
@@ -79,7 +79,6 @@ export function initFirstReveal() {
   function dismissSwipeHint() {
     if (_hintDismissed) return;
     _hintDismissed = true;
-    localStorage.setItem('fire_swipe_hint', '1');
     if (_hintVisible) {
       swipeHint.classList.remove('is-visible');
       _hintVisible = false;
