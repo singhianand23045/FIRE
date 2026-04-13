@@ -60,7 +60,11 @@ export function callOracle(triggerPoint, extra = {}) {
   _inflight = true;
   if (CONFIG.DEBUG) console.log('[FIRE][Oracle] Calling LLM...', { triggerPoint, mood: payload.currentMood });
 
-  const endpoint = CONFIG.ORACLE_API_URL || '/api/oracle';
+  // On localhost, proxy to Vercel since local static server has no /api
+  const baseUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? 'https://fire-63rv0q0hs-anand-singhis-projects.vercel.app'
+    : '';
+  const endpoint = baseUrl + (CONFIG.ORACLE_API_URL || '/api/oracle');
 
   fetch(endpoint, {
     method: 'POST',

@@ -46,7 +46,7 @@ export const CONFIG = {
   STREAK_WIN_THRESHOLD: 3,        // matches needed to count as a win draw
 
   // ── Oracle LLM ─────────────────────────────────────────────
-  ORACLE_API_URL: '/api/oracle',    // Vercel serverless function
+  ORACLE_API_URL: '/api/oracle',
 
   // ── Debug ──────────────────────────────────────────────────
   DEBUG: true,  // set false before production
