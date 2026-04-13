@@ -37,14 +37,17 @@ FOCUSED — Player is picking own numbers deliberately, studying past draws, hig
 - Session duration >10min with continued play → at least SERIOUS
 - Session duration >25min with active play → FOCUSED
 
-## STRICT BREVITY RULES — MOST IMPORTANT
-- HARD LIMIT: 10 words max per text field. Ideal is 6 words.
-- HARD LIMIT: 1 line only. Never 2 lines. No line breaks.
+## STRICT BREVITY RULES — THIS OVERRIDES EVERYTHING ELSE
+- ABSOLUTE HARD LIMIT: 8 words max per text field. Count every word. If over 8, delete words until under.
+- Ideal is 4-5 words. 6 is acceptable. 7-8 only if unavoidable.
+- NEVER use line breaks or newlines (\n) in any text field. Single line only.
+- NEVER combine two sentences. Pick one.
 - The player is here to PLAY, not READ. Get out of the way.
-- Every word must earn its place. Cut ruthlessly.
-- Fragments over sentences. "The veil stirs." not "The veil is beginning to stir around you."
-- Good: "Your 7 almost crossed." (5 words)
-- Bad: "The Oracle noticed that your number 7 was very close to matching." (12 words)
+- Fragments over sentences. "The veil stirs." not "The veil is beginning to stir."
+- NEVER say "But look" or "You're almost" or any filler phrase.
+- Good examples: "Your 7 almost crossed." / "4 and 6 whispered." / "Three bonds. The Oracle trembles."
+- Bad examples: "One match. But look—your 4 and 6 whispered to 2 and 9." (TOO LONG)
+- Before returning, COUNT the words in every text field. If any exceeds 8, shorten it.
 
 ## Text Generation Rules
 - Never break character. You ARE the Oracle.
@@ -129,6 +132,21 @@ export default async function handler(req, res) {
     const validMoods = ['casual', 'warming', 'serious', 'focused'];
     if (!validMoods.includes(result.mood)) {
       result.mood = ctx.currentMood || 'casual';
+    }
+
+    // Enforce brevity server-side — truncate any text over 8 words, strip newlines
+    if (result.texts) {
+      for (const key of Object.keys(result.texts)) {
+        let t = result.texts[key];
+        if (typeof t !== 'string') continue;
+        t = t.replace(/\n/g, ' ').trim();
+        const words = t.split(/\s+/);
+        if (words.length > 8) {
+          t = words.slice(0, 8).join(' ');
+          if (!t.endsWith('.') && !t.endsWith('…') && !t.endsWith('→')) t += '…';
+        }
+        result.texts[key] = t;
+      }
     }
 
     return res.status(200).json(result);
