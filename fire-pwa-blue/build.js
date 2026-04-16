@@ -34,6 +34,9 @@ writeFileSync(path.join(DIST, 'index.html'), html);
 // ── 4. Generate dist/sw.js with bundled PRECACHE_ASSETS ───────
 console.log('Generating sw.js...');
 let sw = readFileSync(path.join(ROOT, 'sw.js'), 'utf8');
+// Auto-bump cache version on every build so deploys invalidate the old SW cache
+const buildHash = Date.now().toString(36);
+sw = sw.replace(/const CACHE_NAME = '[^']*'/, `const CACHE_NAME = 'fire-${buildHash}'`);
 const bundledPrecache = `const PRECACHE_ASSETS = [
   '/',
   '/index.html',
@@ -69,6 +72,9 @@ if (existsSync(path.join(ROOT, '404.html'))) {
 }
 cpSync(path.join(ROOT, 'styles'),  path.join(DIST, 'styles'),  { recursive: true });
 cpSync(path.join(ROOT, 'assets'),  path.join(DIST, 'assets'),  { recursive: true });
+if (existsSync(path.join(ROOT, 'dashboard.html'))) {
+  copyFileSync(path.join(ROOT, 'dashboard.html'), path.join(DIST, 'dashboard.html'));
+}
 
 console.log('\n✓ Build complete → dist/');
 console.log('  Run: firebase deploy --only hosting:fire-1353f');
