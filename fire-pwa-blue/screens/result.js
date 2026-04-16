@@ -170,19 +170,13 @@ export function initResult() {
       ? `<span class="game-summary__total-money">+${_fmtMoney(totalMoney)}</span>`
       : '';
 
-    // Build celebration line — LLM-generated or fallback
-    const llmSummary = getOracleText('gameSummaryLine');
-    let celebLine;
-    if (llmSummary) {
-      celebLine = llmSummary;
-    } else {
-      const parts = [];
-      if (totalEntries > 0) parts.push(`+${totalEntries} entries`);
-      if (totalMoney > 0) parts.push(`+${_fmtMoney(totalMoney)}`);
-      celebLine = parts.length > 0
-        ? parts.join(' · ')
-        : 'The Oracle watches. Your time comes.';
-    }
+    // Build celebration line — always computed from actual game results
+    const parts = [];
+    if (totalEntries > 0) parts.push(`+${totalEntries} entries`);
+    if (totalMoney > 0) parts.push(`+${_fmtMoney(totalMoney)}`);
+    const celebLine = parts.length > 0
+      ? parts.join(' · ')
+      : 'The Oracle watches. Your time comes.';
 
     return `
       <div class="game-end">
@@ -242,18 +236,14 @@ export function initResult() {
       // ── Oracle eye state ────────────────────────────────
       setOracleEyeWin(eye, matchCount >= 4);
 
-      // ── Tier label (LLM or static) ─────────────────────
-      const llmTierLabel = getOracleText('tierLabel');
-      tierLabelEl.textContent = llmTierLabel || TIER_LABELS[tier] || 'The Oracle Speaks';
+      // ── Tier label (always from current draw — LLM cache may be stale) ─
+      tierLabelEl.textContent = TIER_LABELS[tier] || 'The Oracle Speaks';
 
       // ── Score number ────────────────────────────────────
       scoreEl.textContent = matchCount;
 
-      // ── 3. Score sub-line (LLM or static) ───────────────
-      const llmScoreSub = getOracleText('scoreSub');
-      if (llmScoreSub) {
-        scoreSubEl.textContent = llmScoreSub;
-      } else if (prize.money > 0) {
+      // ── 3. Score sub-line (always from current draw — LLM cache is stale) ─
+      if (prize.money > 0) {
         scoreSubEl.textContent = `${matchCount} ${matchCount === 1 ? 'Match' : 'Matches'} · +${_fmtMoney(prize.money)}`;
       } else if (prize.entries > 0) {
         scoreSubEl.textContent = `${matchCount} ${matchCount === 1 ? 'Match' : 'Matches'} · +${prize.entries} entries`;
@@ -261,14 +251,8 @@ export function initResult() {
         scoreSubEl.textContent = `${matchCount} ${matchCount === 1 ? 'Match' : 'Matches'}`;
       }
 
-      // ── Oracle message — LLM-generated or static pool ───
-      const llmOracleMsg = getOracleText('oracleMessage');
-      if (llmOracleMsg) {
-        // LLM always generates a message — show for all results, not just wins
-        oracleMsgEl.innerHTML = llmOracleMsg;
-        oracleMsgEl.style.display = '';
-        if (CONFIG.DEBUG) console.log('[FIRE][Oracle] Using LLM oracle message');
-      } else if (isWin) {
+      // ── Oracle message — static pool only (LLM cache is from previous draw) ─
+      if (isWin) {
         const msgPool = {
           blazes: MSGS_BLAZES, triple: MSGS_TRIPLE,
           building: MSGS_BUILDING, gathering: MSGS_GATHERING,
@@ -414,14 +398,13 @@ export function initResult() {
         ritualInviteEl.style.display = 'none';
       }
 
-      // ── Delayed Oracle whisper toast (LLM or adaptive pool) ─
-      const llmWhisper = getOracleText('resultWhisper');
+      // ── Delayed Oracle whisper toast (adaptive pool — LLM cache is stale) ─
       const whisperPool = adaptParams.engagement === 'passive' ? WHISPERS_AGAIN_PASSIVE
                         : adaptParams.engagement === 'active'  ? WHISPERS_AGAIN_ACTIVE
                         : WHISPERS_AGAIN;
       _whisperTimers.push(setTimeout(() => {
         if (currentScreen() === 'result' && !document.querySelector('.wallet-panel--visible')) {
-          whisper(llmWhisper || pick(whisperPool, 'again'), 5000);
+          whisper(pick(whisperPool, 'again'), 5000);
         }
       }, 2200));
     },
@@ -474,10 +457,7 @@ export function initResult() {
 
   // ── Helper: build near-miss text ─────────────────────────
   function _buildNearMissText(nearMissData, drawn) {
-    // LLM-generated near-miss narrative takes priority
-    const llmNearMiss = getOracleText('nearMissNarrative');
-    if (llmNearMiss) return llmNearMiss;
-
+    // LLM cache is from previous draw — skip it, use live near-miss data
     const { matchCount } = _params.score ?? { matchCount: 0 };
 
     if (!nearMissData || matchCount === 0) {
