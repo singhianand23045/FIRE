@@ -146,6 +146,21 @@ export function isFirebaseReady() {
   return _initialized;
 }
 
+// ── Mood debug sync (for remote dashboard) ──────────────────
+let _lastMoodSync = 0;
+const MOOD_SYNC_THROTTLE = 1000; // max once per second
+
+export function syncMoodDebug(deviceId, data) {
+  if (!_initialized) return;
+  const now = Date.now();
+  if (now - _lastMoodSync < MOOD_SYNC_THROTTLE) return;
+  _lastMoodSync = now;
+  set(ref(_db, `/debug/${deviceId}`), { ...data, updatedAt: now })
+    .catch(err => {
+      if (CONFIG.DEBUG) console.warn('[FIRE][Firebase] syncMoodDebug error:', err);
+    });
+}
+
 export async function syncUserToFirebase(deviceId, data) {
   if (!_initialized) return; // skip silently until auth is ready
   try {

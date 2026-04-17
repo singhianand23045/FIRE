@@ -166,13 +166,14 @@ export function getCurrentMood() {
   if (state.mood) return state.mood;
 
   // Heuristic fallback
-  return _heuristicMood(state);
+  return computeHeuristicMood(state);
 }
 
 /**
- * Simple heuristic mood — used before first LLM response.
+ * Heuristic mood — used before first LLM response and by mood dashboard
+ * for accuracy comparison.
  */
-function _heuristicMood(state) {
+export function computeHeuristicMood(state) {
   const draws = state.drawCount || 0;
   const sessionMs = Date.now() - (state.sessionStartAt || Date.now());
   const signals = state.engagementSignals || [];

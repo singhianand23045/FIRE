@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FIRE — Oracle Mood Dashboard</title>
+<style>
+  :root {
+    --bg: #111;
+    --panel: #1a1a1a;
+    --card: #222;
+    --border: rgba(255,255,255,0.06);
+    --gold: #C9A84C;
+    --text: #E8E8E8;
+    --dim: #666;
+    --mood-casual: #666;
+    --mood-warming: #C9A84C;
+    --mood-serious: #FF6B1A;
+    --mood-focused: #a855f7;
+    --green: #4ade80;
+    --red: #f87171;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
+    min-height: 100vh;
+    padding: 24px;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .header__title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+  .header__status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--dim);
+  }
+  .header__dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--dim);
+  }
+  .header__dot.connected { background: var(--green); }
+  .header__dot.stale { background: #f59e0b; }
+
+  /* Device selector */
+  .device-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .device-bar label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--dim);
+    text-transform: uppercase;
+  }
+  .device-bar select {
+    background: var(--panel);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-family: 'SF Mono', 'Menlo', monospace;
+    cursor: pointer;
+    min-width: 200px;
+  }
+  .device-bar .session-info {
+    font-size: 11px;
+    color: var(--dim);
+  }
+
+  /* Grid layout */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .grid .full-width { grid-column: 1 / -1; }
+
+  /* Section */
+  .section {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+  }
+  .section__label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    color: var(--dim);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  /* Mood badge */
+  .mood-badge {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .mood-badge__circle {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #000;
+    flex-shrink: 0;
+  }
+  .mood-badge__info { display: flex; flex-direction: column; gap: 2px; }
+  .mood-badge__name {
+    font-size: 20px;
+    font-weight: 600;
+    text-transform: capitalize;
+  }
+  .mood-badge__meta {
+    font-size: 11px;
+    color: var(--dim);
+  }
+  .mood-badge__meta .source {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-right: 6px;
+  }
+  .source-llm { background: rgba(168,85,247,0.2); color: #a855f7; }
+  .source-heuristic { background: rgba(201,168,76,0.2); color: var(--gold); }
+  .source-default { background: rgba(102,102,102,0.2); color: var(--dim); }
+
+  /* Timeline */
+  .timeline {
+    display: flex;
+    gap: 4px;
+    align-items: flex-end;
+    overflow-x: auto;
+    padding: 8px 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--dim) transparent;
+  }
+  .timeline::-webkit-scrollbar { height: 4px; }
+  .timeline::-webkit-scrollbar-thumb { background: var(--dim); border-radius: 2px; }
+  .timeline__entry {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    min-width: 28px;
+  }
+  .timeline__dot {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    border: 2px solid rgba(0,0,0,0.3);
+    flex-shrink: 0;
+  }
+  .timeline__dot.current {
+    width: 20px; height: 20px;
+    box-shadow: 0 0 8px currentColor;
+  }
+  .timeline__label {
+    font-size: 9px;
+    color: var(--dim);
+    font-family: 'SF Mono', 'Menlo', monospace;
+  }
+  .timeline__empty {
+    color: var(--dim);
+    font-size: 12px;
+    font-style: italic;
+    padding: 12px 0;
+  }
+
+  /* Signals table */
+  .signals-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    font-family: 'SF Mono', 'Menlo', monospace;
+  }
+  .signals-table th {
+    text-align: left;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: var(--dim);
+    text-transform: uppercase;
+    padding: 4px 8px 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .signals-table td {
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+  .signals-table tr:last-child td { border-bottom: none; }
+
+  .classify-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+  .classify-badge {
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .classify-passive { background: rgba(248,113,113,0.15); color: var(--red); }
+  .classify-neutral { background: rgba(201,168,76,0.15); color: var(--gold); }
+  .classify-active { background: rgba(74,222,128,0.15); color: var(--green); }
+  .classify-stats {
+    font-size: 11px;
+    color: var(--dim);
+    font-family: 'SF Mono', 'Menlo', monospace;
+  }
+
+  /* Oracle cache */
+  .cache-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    font-size: 11px;
+  }
+  .cache-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+  }
+  .cache-fresh { background: var(--green); }
+  .cache-stale { background: #f59e0b; }
+  .cache-none { background: var(--dim); }
+  .cache-consumed { background: #60a5fa; }
+
+  .texts-grid {
+    display: grid;
+    gap: 1px;
+    background: var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .text-row {
+    display: grid;
+    grid-template-columns: 140px 1fr 44px;
+    background: var(--card);
+    padding: 6px 10px;
+    align-items: center;
+    gap: 8px;
+  }
+  .text-row__key {
+    font-size: 10px;
+    font-family: 'SF Mono', 'Menlo', monospace;
+    color: var(--dim);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .text-row__val {
+    font-size: 12px;
+    color: var(--text);
+    font-style: italic;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .text-row__val.empty { color: var(--dim); font-style: normal; }
+  .text-row__badge {
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-align: center;
+    padding: 2px 0;
+    border-radius: 3px;
+  }
+  .badge-llm { background: rgba(168,85,247,0.2); color: #a855f7; }
+  .badge-static { background: rgba(102,102,102,0.2); color: var(--dim); }
+
+  /* Params */
+  .params-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .param-card {
+    background: var(--card);
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+  }
+  .param-card__label {
+    font-size: 9px;
+    letter-spacing: 1px;
+    color: var(--dim);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .param-card__value {
+    font-size: 22px;
+    font-weight: 700;
+    font-family: 'SF Mono', 'Menlo', monospace;
+  }
+  .param-card__sub {
+    font-size: 10px;
+    color: var(--dim);
+    margin-top: 2px;
+  }
+
+  /* Impact */
+  .impact-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .impact-table th {
+    text-align: left;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: var(--dim);
+    text-transform: uppercase;
+    padding: 4px 8px 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .impact-table td {
+    padding: 8px;
+    border-bottom: 1px solid var(--border);
+    font-family: 'SF Mono', 'Menlo', monospace;
+  }
+  .impact-table tr:last-child td { border-bottom: none; }
+  .impact-match { color: var(--green); }
+  .impact-diff { color: #f59e0b; }
+
+  /* Flags */
+  .flag {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    font-size: 12px;
+    line-height: 1.4;
+  }
+  .flag:last-child { margin-bottom: 0; }
+  .flag-warn {
+    background: rgba(255,107,26,0.08);
+    border-left: 3px solid var(--mood-serious);
+    color: var(--text);
+  }
+  .flag-info {
+    background: rgba(201,168,76,0.08);
+    border-left: 3px solid var(--gold);
+    color: var(--text);
+  }
+  .flag-icon { flex-shrink: 0; font-size: 14px; }
+  .no-flags {
+    color: var(--dim);
+    font-size: 12px;
+    font-style: italic;
+    padding: 8px 0;
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 80px 40px;
+    color: var(--dim);
+  }
+  .empty-state__icon { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
+  .empty-state__title {
+    font-size: 16px;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .empty-state__sub { font-size: 13px; }
+
+  /* Draw result mini */
+  .draw-mini {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+  .draw-mini__label { font-size: 10px; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; }
+  .draw-mini__balls { display: flex; gap: 4px; }
+  .draw-mini__ball {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: 'SF Mono', 'Menlo', monospace;
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--dim);
+  }
+  .draw-mini__ball.matched {
+    background: var(--gold);
+    color: #000;
+    border-color: var(--gold);
+  }
+  .draw-mini__count {
+    font-size: 18px;
+    font-weight: 700;
+    font-family: 'SF Mono', 'Menlo', monospace;
+    margin-left: auto;
+  }
+
+  @media (max-width: 768px) {
+    .grid { grid-template-columns: 1fr; }
+    body { padding: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span class="header__title">Oracle Mood Dashboard</span>
+  <div class="header__status">
+    <div class="header__dot" id="status-dot"></div>
+    <span id="status-text">Connecting...</span>
+  </div>
+</div>
+
+<div class="device-bar">
+  <label>Device</label>
+  <select id="device-select"><option value="">Scanning...</option></select>
+  <span class="session-info" id="session-info"></span>
+</div>
+
+<div id="dashboard-content"></div>
+
+<!-- Firebase SDK (compat for simple standalone use) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+<script>
+// ── Firebase config (same as the game) ──────────────────────
+const FIREBASE_CONFIG = {
+  apiKey: 'AIzaSyALhVaQXUE-QU_ubt9gS9A5zSa1sO20P5U',
+  authDomain: 'fire-1353f.firebaseapp.com',
+  databaseURL: 'https://fire-1353f-default-rtdb.firebaseio.com',
+  projectId: 'fire-1353f',
+  storageBucket: 'fire-1353f.firebasestorage.app',
+};
+
+firebase.initializeApp(FIREBASE_CONFIG);
+const db = firebase.database();
+
+// Authenticate anonymously (needed if RTDB rules require auth)
+firebase.auth().signInAnonymously().catch(err => {
+  console.warn('Firebase auth failed:', err);
+  statusText.textContent = 'Auth failed — check console';
+});
+
+// ── State ────────────────────────────────────────────────────
+let currentDeviceId = null;
+let currentData = null;
+let deviceListener = null;
+let ageInterval = null;
+
+// ── Mood colors ──────────────────────────────────────────────
+const MOOD_COLORS = {
+  casual: '#666',
+  warming: '#C9A84C',
+  serious: '#FF6B1A',
+  focused: '#a855f7',
+};
+
+const TEXT_KEYS = [
+  'openingQuote', 'ctaLabel', 'revealWhisper', 'revealHeader',
+  'oracleMessage', 'tierLabel', 'scoreSub', 'resultWhisper',
+  'nearMissNarrative', 'gameSummaryLine', 'ritualInvite', 'countdownLabel',
+];
+
+// ── Device discovery ─────────────────────────────────────────
+const select = document.getElementById('device-select');
+const statusDot = document.getElementById('status-dot');
+const statusText = document.getElementById('status-text');
+
+db.ref('/debug').on('value', snap => {
+  const devices = snap.val();
+  if (!devices) {
+    select.innerHTML = '<option value="">No devices found</option>';
+    statusDot.className = 'header__dot';
+    statusText.textContent = 'No devices';
+    return;
+  }
+
+  const entries = Object.entries(devices)
+    .map(([id, data]) => ({ id, updatedAt: data.updatedAt || 0, data }))
+    .sort((a, b) => b.updatedAt - a.updatedAt);
+
+  const prev = select.value;
+  select.innerHTML = entries.map(e => {
+    const ago = timeAgo(e.updatedAt);
+    const short = e.id.slice(0, 8);
+    return `<option value="${e.id}">${short}... (${ago})</option>`;
+  }).join('');
+
+  // Auto-select most recent if none selected, or preserve selection
+  if (prev && entries.some(e => e.id === prev)) {
+    select.value = prev;
+  } else {
+    select.value = entries[0].id;
+  }
+
+  if (select.value !== currentDeviceId) {
+    switchDevice(select.value);
+  }
+});
+
+select.addEventListener('change', () => switchDevice(select.value));
+
+function switchDevice(deviceId) {
+  // Tear down old listener
+  if (deviceListener && currentDeviceId) {
+    db.ref(`/debug/${currentDeviceId}`).off('value', deviceListener);
+  }
+  clearInterval(ageInterval);
+
+  currentDeviceId = deviceId;
+  if (!deviceId) return;
+
+  // Listen for real-time updates
+  deviceListener = db.ref(`/debug/${deviceId}`).on('value', snap => {
+    currentData = snap.val();
+    if (currentData) {
+      render(currentData);
+      updateConnectionStatus(currentData.updatedAt);
+    }
+  });
+
+  // Refresh age displays every second
+  ageInterval = setInterval(() => {
+    if (currentData) {
+      updateConnectionStatus(currentData.updatedAt);
+      updateAgeDisplays();
+    }
+  }, 1000);
+}
+
+function updateConnectionStatus(updatedAt) {
+  const age = Date.now() - (updatedAt || 0);
+  if (age < 5000) {
+    statusDot.className = 'header__dot connected';
+    statusText.textContent = 'Live';
+  } else if (age < 30000) {
+    statusDot.className = 'header__dot stale';
+    statusText.textContent = `Last update ${timeAgo(updatedAt)}`;
+  } else {
+    statusDot.className = 'header__dot';
+    statusText.textContent = `Inactive (${timeAgo(updatedAt)})`;
+  }
+}
+
+// ── Render ───────────────────────────────────────────────────
+function render(data) {
+  const content = document.getElementById('dashboard-content');
+
+  if (!data || !data.mood) {
+    content.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state__icon">&#x1F441;</div>
+        <div class="empty-state__title">Waiting for data</div>
+        <div class="empty-state__sub">Start playing the game on the device to see mood data here.</div>
+      </div>`;
+    return;
+  }
+
+  content.innerHTML = `
+    <div class="grid">
+      ${renderMood(data)}
+      ${renderTimeline(data)}
+      ${renderLastDraw(data)}
+      ${renderSignals(data)}
+      ${renderOracleCache(data)}
+      ${renderImpact(data)}
+      ${renderFlags(data)}
+    </div>`;
+}
+
+// ── Section: Current Mood ────────────────────────────────────
+function renderMood(data) {
+  const mood = data.mood || 'casual';
+  const color = MOOD_COLORS[mood] || MOOD_COLORS.casual;
+  const source = getMoodSource(data);
+  const sourceClass = source === 'LLM' ? 'source-llm' : source === 'Heuristic' ? 'source-heuristic' : 'source-default';
+
+  const cache = data.oracleCache;
+  const age = cache ? timeAgo(cache.fetchedAt) : '--';
+
+  const sessionMs = data.sessionStartAt ? Date.now() - data.sessionStartAt : 0;
+  const sessionStr = formatDuration(sessionMs);
+
+  return `
+    <div class="section">
+      <div class="section__label">Current Mood</div>
+      <div class="mood-badge">
+        <div class="mood-badge__circle" style="background:${color}">${mood[0].toUpperCase()}</div>
+        <div class="mood-badge__info">
+          <div class="mood-badge__name" style="color:${color}">${mood}</div>
+          <div class="mood-badge__meta">
+            <span class="source ${sourceClass}">${source}</span>
+            Set ${age} &middot; Draw #${data.drawCount || 0} &middot; Session ${sessionStr}
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── Section: Mood Timeline ───────────────────────────────────
+function renderTimeline(data) {
+  const history = data.moodHistory || [];
+  if (history.length === 0) {
+    return `
+      <div class="section">
+        <div class="section__label">Mood Timeline</div>
+        <div class="timeline__empty">No mood transitions yet</div>
+      </div>`;
+  }
+
+  const dots = history.map((m, i) => {
+    const color = MOOD_COLORS[m] || MOOD_COLORS.casual;
+    const isCurrent = i === history.length - 1;
+    return `
+      <div class="timeline__entry">
+        <div class="timeline__dot ${isCurrent ? 'current' : ''}" style="background:${color};color:${color}"></div>
+        <span class="timeline__label">${i + 1}</span>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="section full-width">
+      <div class="section__label">Mood Timeline (${history.length} transitions)</div>
+      <div class="timeline">${dots}</div>
+    </div>`;
+}
+
+// ── Section: Last Draw Result ────────────────────────────────
+function renderLastDraw(data) {
+  const result = data.lastDrawResult;
+  if (!result) {
+    return `
+      <div class="section">
+        <div class="section__label">Last Draw</div>
+        <div class="timeline__empty">No draws yet</div>
+      </div>`;
+  }
+
+  const playerNums = data.currentNumbers || [];
+  const drawn = result.drawn || [];
+  const matched = result.matched || [];
+
+  const balls = drawn.map(n => {
+    const isMatch = matched.includes(n);
+    return `<div class="draw-mini__ball ${isMatch ? 'matched' : ''}">${n}</div>`;
+  }).join('');
+
+  const matchColor = result.matchCount >= 3 ? 'var(--gold)' :
+                     result.matchCount >= 1 ? 'var(--text)' : 'var(--dim)';
+
+  return `
+    <div class="section">
+      <div class="section__label">Last Draw</div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div>
+          <div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Player</div>
+          <div style="font-family:'SF Mono',monospace;font-size:13px">[${playerNums.join(', ')}]</div>
+        </div>
+      </div>
+      <div class="draw-mini">
+        <div class="draw-mini__label">Drawn</div>
+        <div class="draw-mini__balls">${balls}</div>
+        <div class="draw-mini__count" style="color:${matchColor}">${result.matchCount}/6</div>
+      </div>
+      <div style="margin-top:8px;font-size:11px;color:var(--dim)">
+        Game draw ${data.gameDrawIndex || 0}/3 &middot; ${data.gameActive ? 'Active' : 'Inactive'} &middot; Tier: ${result.tier || '--'}
+      </div>
+    </div>`;
+}
+
+// ── Section: Engagement Signals ──────────────────────────────
+function renderSignals(data) {
+  const signals = data.engagementSignals || [];
+  const recent = signals.slice(-2);
+
+  const avgChanges = recent.length > 0
+    ? recent.reduce((s, r) => s + (r.numberChanges || 0), 0) / recent.length : 0;
+  const avgDwell = recent.length > 0
+    ? recent.reduce((s, r) => s + (r.resultDwellMs || 0), 0) / recent.length : 0;
+
+  const engagement = avgChanges >= 2 || avgDwell >= 5000 ? 'active'
+    : avgChanges < 2 && avgDwell < 3000 ? 'passive' : 'neutral';
+
+  const rows = signals.slice(-5).reverse().map(s => `
+    <tr>
+      <td>#${s.drawId}</td>
+      <td>${s.numberChanges}</td>
+      <td>${(s.resultDwellMs / 1000).toFixed(1)}s</td>
+      <td>${timeAgo(s.at)}</td>
+    </tr>`).join('');
+
+  const pendingInfo = data.pendingNumberChanges
+    ? `<div style="margin-top:8px;font-size:11px;color:var(--gold)">Pending changes: ${data.pendingNumberChanges} (live, pre-draw)</div>` : '';
+
+  return `
+    <div class="section full-width">
+      <div class="section__label">Engagement Signals (${signals.length})</div>
+      ${signals.length > 0 ? `
+        <table class="signals-table">
+          <tr><th>Draw</th><th>Changes</th><th>Dwell</th><th>When</th></tr>
+          ${rows}
+        </table>
+        <div class="classify-bar">
+          <span class="classify-badge classify-${engagement}">${engagement}</span>
+          <span class="classify-stats">avgChanges: ${avgChanges.toFixed(1)} &middot; avgDwell: ${(avgDwell/1000).toFixed(1)}s</span>
+        </div>
+      ` : '<div class="timeline__empty">No signals recorded yet</div>'}
+      ${pendingInfo}
+    </div>`;
+}
+
+// ── Section: Oracle Cache ────────────────────────────────────
+function renderOracleCache(data) {
+  const cache = data.oracleCache;
+
+  if (!cache) {
+    return `
+      <div class="section full-width">
+        <div class="section__label">Oracle LLM Response</div>
+        <div class="cache-status"><div class="cache-dot cache-none"></div> No cache</div>
+        <div class="timeline__empty">Oracle hasn't responded yet</div>
+      </div>`;
+  }
+
+  const age = Date.now() - (cache.fetchedAt || 0);
+  const isStale = age > 5 * 60 * 1000;
+  const statusClass = cache.consumed ? 'cache-consumed' : isStale ? 'cache-stale' : 'cache-fresh';
+  const statusLabel = cache.consumed ? 'Consumed' : isStale ? 'Stale' : 'Fresh';
+
+  const textRows = TEXT_KEYS.map(key => {
+    const val = cache.texts?.[key];
+    const hasVal = val && val.length > 0;
+    return `
+      <div class="text-row">
+        <span class="text-row__key">${key}</span>
+        <span class="text-row__val ${hasVal ? '' : 'empty'}">${hasVal ? val : '(none)'}</span>
+        <span class="text-row__badge ${hasVal ? 'badge-llm' : 'badge-static'}">${hasVal ? 'LLM' : 'Static'}</span>
+      </div>`;
+  }).join('');
+
+  const llmCount = TEXT_KEYS.filter(k => cache.texts?.[k]?.length > 0).length;
+
+  const params = cache.params || {};
+  const boostColor = params.boostOdds >= 0.4 ? 'var(--mood-serious)' :
+                     params.boostOdds <= 0.2 ? 'var(--mood-focused)' : 'var(--gold)';
+
+  return `
+    <div class="section full-width">
+      <div class="section__label">Oracle LLM Response</div>
+      <div class="cache-status">
+        <div class="cache-dot ${statusClass}"></div>
+        <span>${statusLabel} &middot; ${timeAgo(cache.fetchedAt)} &middot; Mood: <strong style="color:${MOOD_COLORS[cache.mood]}">${cache.mood || '--'}</strong></span>
+        <span style="margin-left:auto;font-size:10px;color:var(--dim)">${llmCount}/${TEXT_KEYS.length} texts generated</span>
+      </div>
+      <div class="texts-grid">${textRows}</div>
+      <div class="params-grid">
+        <div class="param-card">
+          <div class="param-card__label">Boost Odds</div>
+          <div class="param-card__value" style="color:${boostColor}">${(params.boostOdds ?? 0.30).toFixed(2)}</div>
+          <div class="param-card__sub">chance of 3+ match</div>
+        </div>
+        <div class="param-card">
+          <div class="param-card__label">Auto-Advance</div>
+          <div class="param-card__value">${((params.autoAdvanceDelayMs ?? 8000) / 1000).toFixed(1)}s</div>
+          <div class="param-card__sub">result screen delay</div>
+        </div>
+        <div class="param-card">
+          <div class="param-card__label">Countdown</div>
+          <div class="param-card__value">${params.newGameCountdownSecs ?? 5}s</div>
+          <div class="param-card__sub">new game countdown</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── Section: Gameplay Impact ─────────────────────────────────
+function renderImpact(data) {
+  const signals = data.engagementSignals || [];
+  const recent = signals.slice(-2);
+  const avgChanges = recent.length > 0
+    ? recent.reduce((s, r) => s + (r.numberChanges || 0), 0) / recent.length : 0;
+  const avgDwell = recent.length > 0
+    ? recent.reduce((s, r) => s + (r.resultDwellMs || 0), 0) / recent.length : 0;
+
+  const engagement = avgChanges >= 2 || avgDwell >= 5000 ? 'active'
+    : avgChanges < 2 && avgDwell < 3000 ? 'passive' : 'neutral';
+
+  // Heuristic values (from adapt.js logic)
+  const hBoost = engagement === 'passive' ? 0.45 : engagement === 'active' ? 0.20 : 0.30;
+  const hDelay = engagement === 'passive' ? 10000 : engagement === 'active' ? 5000 : 8000;
+  const hCountdown = engagement === 'passive' ? 7 : engagement === 'active' ? 3 : 5;
+
+  const cache = data.oracleCache;
+  const llm = cache?.params;
+  const age = cache ? Date.now() - (cache.fetchedAt || 0) : Infinity;
+  const hasLLM = llm && age < 5 * 60 * 1000;
+
+  const activeBoost = hasLLM ? (llm.boostOdds ?? hBoost) : hBoost;
+  const activeDelay = hasLLM ? (llm.autoAdvanceDelayMs ?? hDelay) : hDelay;
+  const activeCountdown = hasLLM ? (llm.newGameCountdownSecs ?? hCountdown) : hCountdown;
+  const source = hasLLM ? 'LLM' : 'Heuristic';
+
+  function diffClass(a, b) { return a === b ? 'impact-match' : 'impact-diff'; }
+
+  return `
+    <div class="section full-width">
+      <div class="section__label">Gameplay Impact</div>
+      <table class="impact-table">
+        <tr><th>Parameter</th><th>Active</th><th>Source</th><th>Heuristic</th><th>LLM</th></tr>
+        <tr>
+          <td style="color:var(--dim)">boostOdds</td>
+          <td><strong>${activeBoost.toFixed(2)}</strong></td>
+          <td><span class="source ${source === 'LLM' ? 'source-llm' : 'source-heuristic'}" style="font-size:9px">${source}</span></td>
+          <td class="${diffClass(hBoost, activeBoost)}">${hBoost.toFixed(2)}</td>
+          <td class="${hasLLM ? diffClass(llm.boostOdds, activeBoost) : ''}">${hasLLM ? (typeof llm.boostOdds === 'number' ? llm.boostOdds.toFixed(2) : '--') : '--'}</td>
+        </tr>
+        <tr>
+          <td style="color:var(--dim)">autoAdvance</td>
+          <td><strong>${(activeDelay/1000).toFixed(1)}s</strong></td>
+          <td><span class="source ${source === 'LLM' ? 'source-llm' : 'source-heuristic'}" style="font-size:9px">${source}</span></td>
+          <td class="${diffClass(hDelay, activeDelay)}">${(hDelay/1000).toFixed(1)}s</td>
+          <td class="${hasLLM ? diffClass(llm.autoAdvanceDelayMs, activeDelay) : ''}">${hasLLM ? ((llm.autoAdvanceDelayMs ?? 0)/1000).toFixed(1) + 's' : '--'}</td>
+        </tr>
+        <tr>
+          <td style="color:var(--dim)">countdown</td>
+          <td><strong>${activeCountdown}s</strong></td>
+          <td><span class="source ${source === 'LLM' ? 'source-llm' : 'source-heuristic'}" style="font-size:9px">${source}</span></td>
+          <td class="${diffClass(hCountdown, activeCountdown)}">${hCountdown}s</td>
+          <td class="${hasLLM ? diffClass(llm.newGameCountdownSecs, activeCountdown) : ''}">${hasLLM ? (llm.newGameCountdownSecs ?? '--') + 's' : '--'}</td>
+        </tr>
+      </table>
+      <div style="margin-top:10px;font-size:11px;color:var(--dim)">
+        Engagement: <strong>${engagement}</strong> &middot;
+        Soul profile: <strong>${data.ritualComplete ? 'Complete' : 'Incomplete'}</strong>
+        ${data.soulProfile ? ` &middot; ${data.soulProfile.zodiac || ''} / ${data.soulProfile.element || ''} / Soul #${data.soulProfile.soulNumber || '?'}` : ''}
+      </div>
+    </div>`;
+}
+
+// ── Section: Accuracy Flags ──────────────────────────────────
+function renderFlags(data) {
+  const flags = computeFlags(data);
+
+  const flagsHtml = flags.length > 0
+    ? flags.map(f => `
+        <div class="flag flag-${f.level}">
+          <span class="flag-icon">${f.level === 'warn' ? '&#9888;' : '&#8505;'}</span>
+          <span>${f.msg}</span>
+        </div>`).join('')
+    : '<div class="no-flags">No anomalies detected</div>';
+
+  return `
+    <div class="section full-width">
+      <div class="section__label">Accuracy Flags (${flags.length})</div>
+      ${flagsHtml}
+    </div>`;
+}
+
+function computeFlags(data) {
+  const flags = [];
+  const cache = data.oracleCache;
+  const signals = data.engagementSignals || [];
+  const recent = signals.slice(-2);
+  const mood = data.mood;
+
+  const avgChanges = recent.length > 0
+    ? recent.reduce((s, r) => s + (r.numberChanges || 0), 0) / recent.length : 0;
+  const avgDwell = recent.length > 0
+    ? recent.reduce((s, r) => s + (r.resultDwellMs || 0), 0) / recent.length : 0;
+
+  // Flag: focused but low engagement
+  if (mood === 'focused' && avgDwell < 3000 && avgChanges < 2 && signals.length >= 2) {
+    flags.push({ level: 'warn',
+      msg: `Mood is "focused" but avgDwell=${(avgDwell/1000).toFixed(1)}s, avgChanges=${avgChanges.toFixed(1)} \u2014 signals suggest passive/neutral` });
+  }
+
+  // Flag: casual but high engagement
+  if (mood === 'casual' && (avgDwell >= 5000 || avgChanges >= 3) && signals.length >= 2) {
+    flags.push({ level: 'warn',
+      msg: `Mood is "casual" but avgDwell=${(avgDwell/1000).toFixed(1)}s, avgChanges=${avgChanges.toFixed(1)} \u2014 signals suggest focused/serious` });
+  }
+
+  // Flag: LLM vs heuristic divergence
+  const heuristic = computeHeuristicMood(data);
+  if (cache && mood !== heuristic) {
+    flags.push({ level: 'info',
+      msg: `LLM mood "${mood}" differs from heuristic "${heuristic}"` });
+  }
+
+  // Flag: stale cache
+  if (cache && (Date.now() - (cache.fetchedAt || 0) > 5 * 60 * 1000)) {
+    flags.push({ level: 'warn',
+      msg: `Oracle cache is stale (${Math.round((Date.now() - cache.fetchedAt) / 60000)}min old)` });
+  }
+
+  // Flag: no LLM after several draws
+  if (!cache && (data.drawCount || 0) >= 3) {
+    flags.push({ level: 'warn',
+      msg: `No LLM data after ${data.drawCount} draws \u2014 Oracle may be unreachable` });
+  }
+
+  // Flag: boostOdds inconsistent with mood
+  if (cache?.params?.boostOdds > 0.4 && mood === 'focused') {
+    flags.push({ level: 'info',
+      msg: `boostOdds=${cache.params.boostOdds} is high for "focused" mood (expected ~0.15)` });
+  }
+  if (cache?.params?.boostOdds < 0.2 && mood === 'casual') {
+    flags.push({ level: 'info',
+      msg: `boostOdds=${cache.params.boostOdds} is low for "casual" mood (expected ~0.50)` });
+  }
+
+  return flags;
+}
+
+// ── Heuristic mood (mirrors oracle-llm.js logic) ────────────
+function computeHeuristicMood(data) {
+  const draws = data.drawCount || 0;
+  const sessionMs = data.sessionStartAt ? Date.now() - data.sessionStartAt : 0;
+  const signals = data.engagementSignals || [];
+  const recent = signals.slice(-3);
+
+  const avgChanges = recent.length > 0
+    ? recent.reduce((s, r) => s + (r.numberChanges || 0), 0) / recent.length : 0;
+  const avgDwell = recent.length > 0
+    ? recent.reduce((s, r) => s + (r.resultDwellMs || 0), 0) / recent.length : 0;
+
+  if (avgChanges >= 3 && avgDwell >= 5000) return 'focused';
+  if (draws >= 3 || sessionMs > 10 * 60 * 1000) return 'serious';
+  if (draws >= 1 && (avgChanges >= 1 || avgDwell >= 3000)) return 'warming';
+  return 'casual';
+}
+
+// ── Helpers ──────────────────────────────────────────────────
+function getMoodSource(data) {
+  const cache = data.oracleCache;
+  if (cache && !cache.consumed && (Date.now() - (cache.fetchedAt || 0) < 5 * 60 * 1000)) return 'LLM';
+  if ((data.drawCount || 0) < 1) return 'Default';
+  return 'Heuristic';
+}
+
+function timeAgo(ts) {
+  if (!ts) return '--';
+  const sec = Math.max(0, Math.floor((Date.now() - ts) / 1000));
+  if (sec < 5) return 'just now';
+  if (sec < 60) return `${sec}s ago`;
+  const min = Math.floor(sec / 60);
+  if (min < 60) return `${min}m ago`;
+  const hr = Math.floor(min / 60);
+  return `${hr}h ${min % 60}m ago`;
+}
+
+function formatDuration(ms) {
+  const sec = Math.floor(ms / 1000);
+  const min = Math.floor(sec / 60);
+  const hr = Math.floor(min / 60);
+  if (hr > 0) return `${hr}h ${min % 60}m`;
+  if (min > 0) return `${min}m ${sec % 60}s`;
+  return `${sec}s`;
+}
+
+function updateAgeDisplays() {
+  // Re-render on tick to keep ages fresh
+  if (currentData) render(currentData);
+}
+</script>
+</body>
+</html>

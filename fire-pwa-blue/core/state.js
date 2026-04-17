@@ -4,10 +4,18 @@
 // State is persisted to localStorage on every change.
 // ─────────────────────────────────────────────────────────────
 
-import { store } from './device.js';
+import { store, getDeviceId } from './device.js';
 import { CONFIG } from '../config.js';
 
 const STATE_KEY = 'state';
+
+// Keys that trigger a mood debug sync to Firebase
+const MOOD_SYNC_KEYS = [
+  'mood', 'moodHistory', 'oracleCache', 'engagementSignals',
+  'pendingNumberChanges', 'drawCount', 'sessionDrawCount',
+  'lastDrawResult', 'currentNumbers', 'gameDrawIndex', 'gameActive',
+  'ritualComplete', 'soulProfile', 'preDrawDwellMs', 'warmBallIndices',
+];
 
 // ── Default State ────────────────────────────────────────────
 function defaultState() {
@@ -119,7 +127,42 @@ export function updateState(partial) {
   Object.assign(_state, partial);
   _persist();
   document.dispatchEvent(new CustomEvent('fire:state:updated', { detail: partial }));
+
+  // Sync mood-relevant changes to Firebase for remote dashboard
+  if (Object.keys(partial).some(k => MOOD_SYNC_KEYS.includes(k))) {
+    _syncMoodToFirebase();
+  }
+
   return _state;
+}
+
+function _syncMoodToFirebase() {
+  import('./firebase.js').then(({ syncMoodDebug }) => {
+    const s = _state;
+    syncMoodDebug(getDeviceId(), {
+      mood: s.mood,
+      moodHistory: s.moodHistory,
+      oracleCache: s.oracleCache,
+      engagementSignals: s.engagementSignals,
+      pendingNumberChanges: s.pendingNumberChanges,
+      preDrawDwellMs: s.preDrawDwellMs,
+      warmBallIndices: s.warmBallIndices,
+      drawCount: s.drawCount,
+      sessionDrawCount: s.sessionDrawCount,
+      sessionStartAt: s.sessionStartAt,
+      lastDrawResult: s.lastDrawResult,
+      currentNumbers: s.currentNumbers,
+      gameDrawIndex: s.gameDrawIndex,
+      gameActive: s.gameActive,
+      ritualComplete: s.ritualComplete,
+      soulProfile: s.soulProfile ? {
+        name: s.soulProfile.name,
+        zodiac: s.soulProfile.zodiac,
+        element: s.soulProfile.element,
+        soulNumber: s.soulProfile.soulNumber,
+      } : null,
+    });
+  }).catch(() => {});
 }
 
 // ── Persist ──────────────────────────────────────────────────
@@ -176,6 +219,9 @@ export function recordDraw(result) {
   if (CONFIG.DEBUG) console.log(`[FIRE][Game] Draw recorded: ${result.matchCount}/6, game draw ${_state.gameDrawIndex}/3`);
 
   _persist();
+
+  // Sync draw result to remote dashboard
+  _syncMoodToFirebase();
 }
 
 // ── Migration (Phase 1 → Phase 3) ───────────────────────────
@@ -211,6 +257,9 @@ export function recordEngagementSignal({ drawId, numberChanges, resultDwellMs })
   if (CONFIG.DEBUG) {
     console.log(`[FIRE][Adapt] Signal recorded — draw ${drawId}, changes: ${signal.numberChanges}, dwell: ${signal.resultDwellMs}ms`);
   }
+
+  // Sync engagement signal to remote dashboard
+  _syncMoodToFirebase();
 }
 
 // ── Reset (for testing / settings screen) ───────────────────
