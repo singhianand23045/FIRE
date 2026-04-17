@@ -213,9 +213,10 @@
 }
 
 /* ── Warm player numbers: preserve amber identity through matches ────
-   When a player swiped to choose a number (is-warm), the amber border
-   and text are their identity. Match indicators stack ON TOP as colored
-   glow rings rather than wiping amber out. */
+   When a player swiped to choose a number (is-warm), the amber border IS
+   the identity marker — it stays through every match state. The interior
+   fill shows match count: 1 solid color = matched in 1 draw, 2 vertical
+   halves = matched in 2 draws, 3 vertical thirds = matched in all 3. */
 
 .num-ball--player.is-warm.is-matched-d1,
 .num-ball--player.is-warm.is-matched-d2,
@@ -224,15 +225,16 @@
 .num-ball--player.is-warm.is-matched-d1.is-matched-d3,
 .num-ball--player.is-warm.is-matched-d2.is-matched-d3,
 .num-ball--player.is-warm.is-matched-d1.is-matched-d2.is-matched-d3 {
-  background: rgba(15, 28, 10, 0.6);
   border: 2px solid #C4A060;
-  color: #C4A060;
+  color: #ffffff;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
   /* Must override .is-matched-d1's animation — its 100% keyframe forces white
-     border/text via var(--gold) (which is #ffffff in this theme), wiping the
-     amber identity. Transitions on .num-ball--player handle the ring fade-in. */
+     border via var(--gold) and locks the dim background, fighting our fill. */
   animation: none;
 }
 
+/* Suppress legacy gradient ::before pseudo-element so our flat fills show through */
 .num-ball--player.is-warm.is-matched-d1::before,
 .num-ball--player.is-warm.is-matched-d2::before,
 .num-ball--player.is-warm.is-matched-d3::before,
@@ -244,50 +246,56 @@
   background: none;
 }
 
-/* Single-match rings */
+/* Single match: solid color fill */
 .num-ball--player.is-warm.is-matched-d1 {
-  box-shadow:
-    0 0 0 3px rgba(255, 255, 255, 0.85),
-    0 0 18px 4px rgba(255, 255, 255, 0.55);
+  background: #ffffff;
+  color: #1C3610;
+  text-shadow: none;
+  box-shadow: 0 0 18px 2px var(--color-d1-glow);
 }
 .num-ball--player.is-warm.is-matched-d2 {
-  box-shadow:
-    0 0 0 3px #ff8c4a,
-    0 0 18px 4px rgba(255, 107, 26, 0.55);
+  background: var(--color-d2);
+  box-shadow: 0 0 18px 2px var(--color-d2-glow);
 }
 .num-ball--player.is-warm.is-matched-d3 {
-  box-shadow:
-    0 0 0 3px #c084fc,
-    0 0 18px 4px rgba(168, 85, 247, 0.55);
+  background: var(--color-d3);
+  box-shadow: 0 0 18px 2px var(--color-d3-glow);
 }
 
-/* Two-match: stacked concentric rings (innermost = earliest draw) */
+/* Two matches: vertical 50/50 split (left = earlier draw, right = later).
+   Text uses dark color when a white slice is present so the centered "7"
+   stays readable across the slice boundary. */
 .num-ball--player.is-warm.is-matched-d1.is-matched-d2 {
-  box-shadow:
-    0 0 0 3px rgba(255, 255, 255, 0.85),
-    0 0 0 6px #ff8c4a,
-    0 0 22px 6px rgba(255, 107, 26, 0.45);
+  background: linear-gradient(90deg,
+    #ffffff 0%, #ffffff 50%,
+    var(--color-d2) 50%, var(--color-d2) 100%);
+  color: #1C3610;
+  text-shadow: none;
+  box-shadow: 0 0 18px 2px var(--color-d2-glow);
 }
 .num-ball--player.is-warm.is-matched-d1.is-matched-d3 {
-  box-shadow:
-    0 0 0 3px rgba(255, 255, 255, 0.85),
-    0 0 0 6px #c084fc,
-    0 0 22px 6px rgba(168, 85, 247, 0.45);
+  background: linear-gradient(90deg,
+    #ffffff 0%, #ffffff 50%,
+    var(--color-d3) 50%, var(--color-d3) 100%);
+  color: #1C3610;
+  text-shadow: none;
+  box-shadow: 0 0 18px 2px var(--color-d3-glow);
 }
 .num-ball--player.is-warm.is-matched-d2.is-matched-d3 {
-  box-shadow:
-    0 0 0 3px #ff8c4a,
-    0 0 0 6px #c084fc,
-    0 0 22px 6px rgba(168, 85, 247, 0.45);
+  background: linear-gradient(90deg,
+    var(--color-d2) 0%, var(--color-d2) 50%,
+    var(--color-d3) 50%, var(--color-d3) 100%);
+  box-shadow: 0 0 18px 2px var(--color-d3-glow);
 }
 
-/* All three matches: triple ring */
+/* All three matches: vertical thirds (d1 left, d2 middle, d3 right).
+   Text sits on the orange middle slice — white reads cleanly. */
 .num-ball--player.is-warm.is-matched-d1.is-matched-d2.is-matched-d3 {
-  box-shadow:
-    0 0 0 3px rgba(255, 255, 255, 0.85),
-    0 0 0 6px #ff8c4a,
-    0 0 0 9px #c084fc,
-    0 0 26px 8px rgba(168, 85, 247, 0.4);
+  background: linear-gradient(90deg,
+    #ffffff 0%, #ffffff 33.333%,
+    var(--color-d2) 33.333%, var(--color-d2) 66.666%,
+    var(--color-d3) 66.666%, var(--color-d3) 100%);
+  box-shadow: 0 0 22px 3px var(--color-d3-glow);
 }
 
 /* Drawn balls */
