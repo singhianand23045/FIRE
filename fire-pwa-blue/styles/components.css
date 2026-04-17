@@ -238,8 +238,10 @@
   color: #000;
   font-weight: 600;
   box-shadow: 0 0 40px var(--color-d1-glow);
+  /* forwards (not both) on ballMatch: prevents its 0% `transform: scale(1)` from
+     filling backwards during the ballDrop phase and clobbering ballDrop's translateY. */
   animation: ballDrop 0.55s var(--ease-spring) both,
-    ballMatch 0.6s var(--ease-spring) 0.55s both;
+    ballMatch 0.6s var(--ease-spring) 0.55s forwards;
 }
 
 .num-ball--draw.is-hit-d2 {
@@ -249,7 +251,7 @@
   font-weight: 600;
   box-shadow: 0 0 40px var(--color-d2-glow);
   animation: ballDrop 0.55s var(--ease-spring) both,
-    ballMatch 0.6s var(--ease-spring) 0.55s both;
+    ballMatch 0.6s var(--ease-spring) 0.55s forwards;
 }
 
 .num-ball--draw.is-hit-d3 {
@@ -259,12 +261,12 @@
   font-weight: 600;
   box-shadow: 0 0 40px var(--color-d3-glow);
   animation: ballDrop 0.55s var(--ease-spring) both,
-    ballMatch 0.6s var(--ease-spring) 0.55s both;
+    ballMatch 0.6s var(--ease-spring) 0.55s forwards;
 }
 
 .num-ball--draw.is-near-miss {
   animation: ballDrop 0.55s var(--ease-spring) both,
-    ballNearMiss 0.6s ease 0.55s both;
+    ballNearMiss 0.6s ease 0.55s forwards;
 }
 
 /* Float animation for idle numbers */
