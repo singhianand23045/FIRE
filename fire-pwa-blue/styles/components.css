@@ -247,20 +247,26 @@
   background: none;
 }
 
-/* Single match: fill with that draw's color */
+/* Single match: halo only (matches oracle-chosen ball treatment for consistency).
+   Dim color tint inside, colored halo, amber ring, colored text. Player only
+   sees the ball "fill" when 2+ draws hit. */
 .num-ball--player.is-warm.is-matched-d1 {
-  background: #ffffff;
-  color: #1C3610;
+  background: var(--color-d1-dim);
+  color: var(--color-d1-bright);
   text-shadow: none;
-  box-shadow: 0 0 24px var(--color-d1-glow), 0 0 48px rgba(255,255,255,0.25);
+  box-shadow: var(--match-glow-d1);
 }
 .num-ball--player.is-warm.is-matched-d2 {
-  background: var(--color-d2);
-  box-shadow: 0 0 24px var(--color-d2-glow), 0 0 48px rgba(255,107,26,0.25);
+  background: var(--color-d2-dim);
+  color: var(--color-d2-bright);
+  text-shadow: none;
+  box-shadow: var(--match-glow-d2);
 }
 .num-ball--player.is-warm.is-matched-d3 {
-  background: var(--color-d3);
-  box-shadow: 0 0 24px var(--color-d3-glow), 0 0 48px rgba(168,85,247,0.25);
+  background: var(--color-d3-dim);
+  color: var(--color-d3-bright);
+  text-shadow: none;
+  box-shadow: var(--match-glow-d3);
 }
 
 /* Two matches: smooth 135° diagonal blend of both bright colors */
