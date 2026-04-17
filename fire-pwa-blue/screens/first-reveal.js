@@ -76,7 +76,7 @@ export function initFirstReveal() {
   // Swipe-to-change hint — shown on first tap each session, dismissed after first swipe
   const swipeHint = document.createElement('div');
   swipeHint.className = 'first-reveal__swipe-hint';
-  swipeHint.textContent = 'swipe up to change';
+  swipeHint.textContent = 'swipe up to change number';
 
   let _hintDismissed = false; // resets every session (page load)
   let _hintVisible = false;
@@ -89,7 +89,7 @@ export function initFirstReveal() {
     _hintTimeout = setTimeout(() => {
       swipeHint.classList.remove('is-visible');
       _hintVisible = false;
-    }, 2000);
+    }, 5000);
   }
 
   function dismissSwipeHint() {
@@ -108,6 +108,11 @@ export function initFirstReveal() {
   profileLink.addEventListener('click', () => {
     haptic.light();
     goto('soul-profile', { viewOnly: true });
+  });
+
+  el.addEventListener('pointerdown', (e) => {
+    if (btn.contains(e.target)) return;
+    showSwipeHint();
   });
 
   el.appendChild(eyeWrap);
@@ -327,7 +332,6 @@ export function initFirstReveal() {
 
         const stopDrag = () => {
           if (isDragging && !didSwipe) {
-            showSwipeHint();
             // Cool back — player didn't change this number
             ball.classList.remove('is-warming');
           }
