@@ -264,7 +264,7 @@ function _normalizeReason(reason) {
   if (reason === '+60 entries') return '3/6 draw';
   if (reason === 'JACKPOT!')    return '6/6 draw';
   // Legacy money reasons
-  if (reason === '+$1.00')      return '4/6 draw';
+  if (reason === '+$10.00')     return '4/6 draw';
   if (reason === '+$100.00')    return '5/6 draw';
   if (reason === '+$100,000.00' || reason.startsWith('+$1') && reason.includes('000')) return '6/6 draw';
   return reason;

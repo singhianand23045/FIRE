@@ -20,7 +20,7 @@ function _syncToFirebase(deviceId, payload) {
 // 1/6 → 0 entries, $0
 // 2/6 → +10 entries, $0
 // 3/6 → +60 entries, $0
-// 4/6 → 0 entries, +$1.00
+// 4/6 → 0 entries, +$10.00
 // 5/6 → 0 entries, +$100.00
 // 6/6 → 0 entries, +jackpot
 
@@ -29,7 +29,7 @@ const PRIZE_TABLE = [
   { entries: 0,  money: 0 },       // 1/6
   { entries: 10, money: 0 },       // 2/6
   { entries: 60, money: 0 },       // 3/6
-  { entries: 0,  money: 1.00 },    // 4/6
+  { entries: 0,  money: 10.00 },   // 4/6
   { entries: 0,  money: 100.00 },  // 5/6
   { entries: 0,  money: null },    // 6/6 — money = jackpot param
 ];
