@@ -212,12 +212,12 @@
   z-index: -1;
 }
 
-/* ── Warm player numbers: preserve amber border through matches ──────
-   The original mystical fills (dim color tints, diagonal gradient blends,
-   atmospheric glows) carry the oracle mood. We keep all of that. The only
-   change is: the border stays amber, not white/orange/gradient — so the
-   player can always read "this is mine" at a glance, while the moody
-   interior tint still says "this matched draw N". */
+/* ── Warm player numbers: amber ring + colored fill on match ─────────
+   Player-picked numbers carry the amber ring as identity. When a draw
+   matches, the ball fills with that draw's color. Multiple matches blend
+   the colors as a smooth diagonal gradient — same look as the original
+   multi-match style, extended to single matches too, with amber ring
+   preserved across every state. */
 
 .num-ball--player.is-warm.is-matched-d1,
 .num-ball--player.is-warm.is-matched-d2,
@@ -228,22 +228,59 @@
 .num-ball--player.is-warm.is-matched-d1.is-matched-d2.is-matched-d3 {
   border: 2px solid #C4A060;
   background-clip: border-box;
+  color: #ffffff;
+  font-weight: 600;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
   /* Disable numberGlow — its 100% keyframe forces border-color back to
-     var(--gold) (= white in this theme), wiping the amber. The standard
-     transition on .num-ball--player handles the fade-in. */
+     var(--gold) (= white in this theme), wiping the amber identity. */
   animation: none;
 }
 
-/* Suppress the original ::before pseudo-element used to draw a gradient
-   border for multi-match states. We want the amber border, not a gradient
-   ring, so the pseudo-element gets out of the way. The dim-tint background
-   gradient on the element itself stays — that's the moody interior fill. */
+/* Suppress the original ::before gradient ring (used the bright colors as
+   a faux-border behind the ball). We want the amber border to be the only
+   ring; the bright colors live in the fill instead. */
 .num-ball--player.is-warm.is-matched-d1.is-matched-d2::before,
 .num-ball--player.is-warm.is-matched-d1.is-matched-d3::before,
 .num-ball--player.is-warm.is-matched-d2.is-matched-d3::before,
 .num-ball--player.is-warm.is-matched-d1.is-matched-d2.is-matched-d3::before {
   content: none;
   background: none;
+}
+
+/* Single match: fill with that draw's color */
+.num-ball--player.is-warm.is-matched-d1 {
+  background: #ffffff;
+  color: #1C3610;
+  text-shadow: none;
+  box-shadow: 0 0 24px var(--color-d1-glow), 0 0 48px rgba(255,255,255,0.25);
+}
+.num-ball--player.is-warm.is-matched-d2 {
+  background: var(--color-d2);
+  box-shadow: 0 0 24px var(--color-d2-glow), 0 0 48px rgba(255,107,26,0.25);
+}
+.num-ball--player.is-warm.is-matched-d3 {
+  background: var(--color-d3);
+  box-shadow: 0 0 24px var(--color-d3-glow), 0 0 48px rgba(168,85,247,0.25);
+}
+
+/* Two matches: smooth 135° diagonal blend of both bright colors */
+.num-ball--player.is-warm.is-matched-d1.is-matched-d2 {
+  background: linear-gradient(135deg, #ffffff 0%, var(--color-d2) 100%);
+  box-shadow: 0 0 24px var(--color-d2-glow), 0 0 48px rgba(255,107,26,0.25);
+}
+.num-ball--player.is-warm.is-matched-d1.is-matched-d3 {
+  background: linear-gradient(135deg, #ffffff 0%, var(--color-d3) 100%);
+  box-shadow: 0 0 24px var(--color-d3-glow), 0 0 48px rgba(168,85,247,0.25);
+}
+.num-ball--player.is-warm.is-matched-d2.is-matched-d3 {
+  background: linear-gradient(135deg, var(--color-d2) 0%, var(--color-d3) 100%);
+  box-shadow: 0 0 24px var(--color-d2-glow), 0 0 24px var(--color-d3-glow);
+}
+
+/* All three matches: three-stop diagonal blend */
+.num-ball--player.is-warm.is-matched-d1.is-matched-d2.is-matched-d3 {
+  background: linear-gradient(135deg, #ffffff 0%, var(--color-d2) 50%, var(--color-d3) 100%);
+  box-shadow: 0 0 28px var(--color-d2-glow), 0 0 28px var(--color-d3-glow);
 }
 
 /* Drawn balls */
