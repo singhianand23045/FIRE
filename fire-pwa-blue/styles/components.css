@@ -212,6 +212,84 @@
   z-index: -1;
 }
 
+/* ── Warm player numbers: preserve amber identity through matches ────
+   When a player swiped to choose a number (is-warm), the amber border
+   and text are their identity. Match indicators stack ON TOP as colored
+   glow rings rather than wiping amber out. */
+
+.num-ball--player.is-warm.is-matched-d1,
+.num-ball--player.is-warm.is-matched-d2,
+.num-ball--player.is-warm.is-matched-d3,
+.num-ball--player.is-warm.is-matched-d1.is-matched-d2,
+.num-ball--player.is-warm.is-matched-d1.is-matched-d3,
+.num-ball--player.is-warm.is-matched-d2.is-matched-d3,
+.num-ball--player.is-warm.is-matched-d1.is-matched-d2.is-matched-d3 {
+  background: rgba(15, 28, 10, 0.6);
+  border: 2px solid #C4A060;
+  color: #C4A060;
+  /* Must override .is-matched-d1's animation — its 100% keyframe forces white
+     border/text via var(--gold) (which is #ffffff in this theme), wiping the
+     amber identity. Transitions on .num-ball--player handle the ring fade-in. */
+  animation: none;
+}
+
+.num-ball--player.is-warm.is-matched-d1::before,
+.num-ball--player.is-warm.is-matched-d2::before,
+.num-ball--player.is-warm.is-matched-d3::before,
+.num-ball--player.is-warm.is-matched-d1.is-matched-d2::before,
+.num-ball--player.is-warm.is-matched-d1.is-matched-d3::before,
+.num-ball--player.is-warm.is-matched-d2.is-matched-d3::before,
+.num-ball--player.is-warm.is-matched-d1.is-matched-d2.is-matched-d3::before {
+  content: none;
+  background: none;
+}
+
+/* Single-match rings */
+.num-ball--player.is-warm.is-matched-d1 {
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.85),
+    0 0 18px 4px rgba(255, 255, 255, 0.55);
+}
+.num-ball--player.is-warm.is-matched-d2 {
+  box-shadow:
+    0 0 0 3px #ff8c4a,
+    0 0 18px 4px rgba(255, 107, 26, 0.55);
+}
+.num-ball--player.is-warm.is-matched-d3 {
+  box-shadow:
+    0 0 0 3px #c084fc,
+    0 0 18px 4px rgba(168, 85, 247, 0.55);
+}
+
+/* Two-match: stacked concentric rings (innermost = earliest draw) */
+.num-ball--player.is-warm.is-matched-d1.is-matched-d2 {
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.85),
+    0 0 0 6px #ff8c4a,
+    0 0 22px 6px rgba(255, 107, 26, 0.45);
+}
+.num-ball--player.is-warm.is-matched-d1.is-matched-d3 {
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.85),
+    0 0 0 6px #c084fc,
+    0 0 22px 6px rgba(168, 85, 247, 0.45);
+}
+.num-ball--player.is-warm.is-matched-d2.is-matched-d3 {
+  box-shadow:
+    0 0 0 3px #ff8c4a,
+    0 0 0 6px #c084fc,
+    0 0 22px 6px rgba(168, 85, 247, 0.45);
+}
+
+/* All three matches: triple ring */
+.num-ball--player.is-warm.is-matched-d1.is-matched-d2.is-matched-d3 {
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.85),
+    0 0 0 6px #ff8c4a,
+    0 0 0 9px #c084fc,
+    0 0 26px 8px rgba(168, 85, 247, 0.4);
+}
+
 /* Drawn balls */
 .num-ball--draw {
   background: rgba(10, 20, 8, 0.7);
