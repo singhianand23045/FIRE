@@ -196,7 +196,9 @@ export function initReveal() {
       if (CONFIG.DEBUG) console.log(`[FIRE][Adapt] Draw pace: ${pace.toFixed(2)}x (${state.pendingNumberChanges || 0} changes, ${Math.round((state.preDrawDwellMs || 0) / 1000)}s dwell)`);
 
       // ── Animate balls dropping ────────────────────────
-      const BASE_DROP_TIMES = [1500, 4000, 7200, 11200, 16200, 22200];
+      // Gaps between drops escalate for suspense but cap at 4s — 5s/6s tails
+      // were losing attention in playtest observations.
+      const BASE_DROP_TIMES = [1500, 4000, 7200, 11200, 15200, 19200];
       const dropTimes = BASE_DROP_TIMES.map(t => Math.round(t * pace));
       let matchCountSoFar = 0;
 
@@ -263,8 +265,9 @@ export function initReveal() {
       });
 
       // ── Final dramatic pause then result (paced) ─────
-      const pauseTime = Math.round(24200 * pace);
-      const resultTime = Math.round(25700 * pace);
+      // 2000ms beat after last ball drops, then 1500ms before routing to result.
+      const pauseTime = Math.round(21200 * pace);
+      const resultTime = Math.round(22700 * pace);
 
       setTimeout(() => {
         whisperEl.textContent = pickUnique(WHISPERS_FINAL_PAUSE, 'final_pause');
