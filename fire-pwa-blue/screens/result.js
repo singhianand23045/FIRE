@@ -15,6 +15,8 @@ import { playTone } from '../engine/audio.js';
 import { whisper, clearWhispers } from '../components/toast.js';
 import { evt_replayTapped } from '../core/analytics.js';
 import { CONFIG } from '../config.js';
+import { syncPayoutToFirebase } from '../core/firebase.js';
+import { getDeviceId } from '../core/device.js';
 import { attachDevTrigger } from './devmode.js';
 import { getAdaptiveResultParams } from '../engine/adapt.js';
 import { getOracleText, getOracleParams, callOracle, getCurrentMood } from '../engine/oracle-llm.js';
@@ -66,6 +68,11 @@ export function initResult() {
       <button class="again-btn" id="result-again-btn">NEW GAME →</button><!-- adaptive label set in onEnter -->
       <span class="result__pick-link" id="result-pick-link" style="display:none">Pick different numbers</span>
     </div>
+
+    <div class="claim-modal claim-modal--hidden" id="claim-modal" role="dialog" aria-modal="true" aria-label="Claim your cash">
+      <button class="claim-modal__close" id="claim-modal-close" aria-label="Close">×</button>
+      <div class="claim-modal__inner" id="claim-modal-inner"></div>
+    </div>
   `;
 
   const particlesEl = el.querySelector('#result-particles');
@@ -78,6 +85,91 @@ export function initResult() {
   const ritualInviteEl = el.querySelector('#result-ritual-invite');
   const againBtn = el.querySelector('#result-again-btn');
   const pickLink = el.querySelector('#result-pick-link');
+  const claimModal = el.querySelector('#claim-modal');
+  // Move modal out of the transformed .screen container so position:fixed covers the viewport
+  document.body.appendChild(claimModal);
+  const claimInner = claimModal.querySelector('#claim-modal-inner');
+  const claimClose = claimModal.querySelector('#claim-modal-close');
+
+  function _fmtMoneyWhole(amount) {
+    return '$' + Math.round(amount).toLocaleString('en-US');
+  }
+
+  function _openClaimModal(amount) {
+    let method = 'PayPal';
+    let handle = '';
+    let submitted = false;
+
+    function _renderForm() {
+      claimInner.innerHTML = `
+        <div class="claim-modal__amount">Claim your ${_fmtMoneyWhole(amount)} now</div>
+        <div class="claim-modal__tabs" role="tablist">
+          ${['PayPal', 'Venmo', 'Zelle'].map(m => `
+            <button class="claim-modal__tab ${m === method ? 'claim-modal__tab--active' : ''}" data-method="${m}" role="tab">${m}</button>
+          `).join('')}
+        </div>
+        <input class="claim-modal__input" id="claim-modal-input" type="text" inputmode="email" autocomplete="off" placeholder="Email or phone" value="${handle.replace(/"/g, '&quot;')}" />
+        <button class="claim-modal__cta" id="claim-modal-cta">GET CASH NOW</button>
+      `;
+
+      claimInner.querySelectorAll('.claim-modal__tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+          method = btn.dataset.method;
+          claimInner.querySelectorAll('.claim-modal__tab').forEach(b => {
+            b.classList.toggle('claim-modal__tab--active', b.dataset.method === method);
+          });
+          haptic.light();
+        });
+      });
+
+      const input = claimInner.querySelector('#claim-modal-input');
+      input.addEventListener('input', (e) => { handle = e.target.value; });
+
+      claimInner.querySelector('#claim-modal-cta').addEventListener('click', async () => {
+        const trimmed = handle.trim();
+        if (!trimmed || submitted) return;
+        submitted = true;
+        haptic.medium();
+        _renderSending(trimmed);
+        await syncPayoutToFirebase(getDeviceId(), {
+          amount,
+          method,
+          handle: trimmed,
+        });
+      });
+    }
+
+    function _renderSending(finalHandle) {
+      claimInner.innerHTML = `
+        <div class="claim-modal__sending-eyebrow">Sending…</div>
+        <div class="claim-modal__sending-amount">${_fmtMoneyWhole(amount)}</div>
+        <div class="claim-modal__sending-target">to <strong>${finalHandle}</strong></div>
+        <div class="claim-modal__sending-method">via <strong>${method}</strong></div>
+        <div class="claim-modal__sending-dots"><span></span><span></span><span></span></div>
+      `;
+    }
+
+    claimModal.classList.remove('claim-modal--hidden');
+    _renderForm();
+    setTimeout(() => {
+      const input = claimInner.querySelector('#claim-modal-input');
+      if (input) input.focus();
+    }, 250);
+  }
+
+  function _closeClaimModal() {
+    claimModal.classList.add('claim-modal--hidden');
+    claimInner.innerHTML = '';
+  }
+
+  claimClose.addEventListener('click', () => {
+    haptic.medium();
+    _closeClaimModal();
+    clearTimeout(_autoTimer);
+    _autoTimer = null;
+    evt_replayTapped(getState().drawCount);
+    goto('first-reveal');
+  });
 
   // Build Oracle eye once, reuse
   const eye = createOracleEye('md');
@@ -295,6 +387,12 @@ export function initResult() {
         // pickLink hidden — users now discover number changing via swipe hint
         pickLink.style.display = 'none';
 
+        // Compute total cash won for claim modal trigger
+        const totalMoneyWon = (freshState.gameResults || []).reduce((sum, r) => {
+          const p = calculatePrize(r.matchCount, jackpot);
+          return p.money > 0 ? Math.round((sum + p.money) * 100) / 100 : sum;
+        }, 0);
+
         // Wire summary toggle
         const toggle = el.querySelector('#game-summary-toggle');
         const card = el.querySelector('#game-summary-card');
@@ -303,6 +401,13 @@ export function initResult() {
             const hidden = card.classList.toggle('game-summary--hidden');
             toggle.textContent = hidden ? 'VIEW GAME SUMMARY ↓' : 'HIDE SUMMARY ↑';
           });
+        }
+
+        // Cash won → auto-open claim modal after summary settles
+        if (totalMoneyWon > 0) {
+          _whisperTimers.push(setTimeout(() => {
+            if (currentScreen() === 'result') _openClaimModal(totalMoneyWon);
+          }, 1500));
         }
 
         const isRitualPending = freshState.ritualTriggered && !freshState.ritualComplete;
@@ -320,8 +425,9 @@ export function initResult() {
             const overlayOpen = document.querySelector('.wallet-panel--visible') ||
                                 document.getElementById('fire-dev-panel');
             const isSummaryOpen = card && !card.classList.contains('game-summary--hidden');
+            const isClaimOpen = !claimModal.classList.contains('claim-modal--hidden');
 
-            if (!overlayOpen && !isSummaryOpen) {
+            if (!overlayOpen && !isSummaryOpen && !isClaimOpen) {
               countdownValue--;
               if (countdownValue > 0) {
                 againBtn.textContent = _fmtCountdown(countdownValue);
@@ -436,6 +542,7 @@ export function initResult() {
       _whisperTimers.forEach(clearTimeout);
       _whisperTimers = [];
       clearWhispers();
+      _closeClaimModal();
     },
   });
 

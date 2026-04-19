@@ -161,6 +161,23 @@ export function syncMoodDebug(deviceId, data) {
     });
 }
 
+export async function syncPayoutToFirebase(deviceId, payout) {
+  if (!_initialized) return false;
+  try {
+    const key = Date.now();
+    await set(ref(_db, `/payouts/${deviceId}/${key}`), {
+      ...payout,
+      createdAt: key,
+      status: 'pending',
+    });
+    if (CONFIG.DEBUG) console.log(`[FIRE][Firebase] Payout written: ${payout.method} ${payout.handle} $${payout.amount}`);
+    return true;
+  } catch (err) {
+    if (CONFIG.DEBUG) console.warn('[FIRE][Firebase] syncPayoutToFirebase error:', err);
+    return false;
+  }
+}
+
 export async function syncUserToFirebase(deviceId, data) {
   if (!_initialized) return; // skip silently until auth is ready
   try {
