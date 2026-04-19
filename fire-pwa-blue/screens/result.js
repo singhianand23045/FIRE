@@ -410,39 +410,35 @@ export function initResult() {
           }, 1500));
         }
 
-        const isRitualPending = freshState.ritualTriggered && !freshState.ritualComplete;
+        // Auto-start countdown regardless of ritual state — ritual invite CTA
+        // remains visible above for users who want to fill their soul profile,
+        // but we don't block binge-play on it.
+        let countdownValue = adaptParams.newGameCountdownSecs;
+        const countdownTpl = getOracleText('countdownLabel') || 'NEXT IN {n}...';
+        const _fmtCountdown = (n) => countdownTpl.replace('{n}', n);
+        againBtn.textContent = _fmtCountdown(countdownValue);
 
-        if (isRitualPending) {
-          againBtn.textContent = adaptParams.ctaLabel;
-        } else {
-          // Binge-play auto-start countdown — duration adapts to engagement
-          let countdownValue = adaptParams.newGameCountdownSecs;
-          const countdownTpl = getOracleText('countdownLabel') || 'NEXT IN {n}...';
-          const _fmtCountdown = (n) => countdownTpl.replace('{n}', n);
-          againBtn.textContent = _fmtCountdown(countdownValue);
+        const _tickCountdown = () => {
+          const overlayOpen = document.querySelector('.wallet-panel--visible') ||
+                              document.getElementById('fire-dev-panel');
+          const isSummaryOpen = card && !card.classList.contains('game-summary--hidden');
+          const isClaimOpen = !claimModal.classList.contains('claim-modal--hidden');
 
-          const _tickCountdown = () => {
-            const overlayOpen = document.querySelector('.wallet-panel--visible') ||
-                                document.getElementById('fire-dev-panel');
-            const isSummaryOpen = card && !card.classList.contains('game-summary--hidden');
-            const isClaimOpen = !claimModal.classList.contains('claim-modal--hidden');
-
-            if (!overlayOpen && !isSummaryOpen && !isClaimOpen) {
-              countdownValue--;
-              if (countdownValue > 0) {
-                againBtn.textContent = _fmtCountdown(countdownValue);
-              } else {
-                againBtn.textContent = `STARTING...`;
-                haptic.medium();
-                evt_replayTapped(getState().drawCount);
-                goto('first-reveal');
-                return; // Stop ticking
-              }
+          if (!overlayOpen && !isSummaryOpen && !isClaimOpen) {
+            countdownValue--;
+            if (countdownValue > 0) {
+              againBtn.textContent = _fmtCountdown(countdownValue);
+            } else {
+              againBtn.textContent = `STARTING...`;
+              haptic.medium();
+              evt_replayTapped(getState().drawCount);
+              goto('first-reveal');
+              return; // Stop ticking
             }
-            _autoTimer = setTimeout(_tickCountdown, 1000);
-          };
+          }
           _autoTimer = setTimeout(_tickCountdown, 1000);
-        }
+        };
+        _autoTimer = setTimeout(_tickCountdown, 1000);
       } else {
         // Draws 1 or 2 — show progress dots, auto-advance after adaptive delay
         drawAreaEl.innerHTML = _buildDrawProgressHTML(gameDrawIndex, nearMissData, drawn);
@@ -486,8 +482,8 @@ export function initResult() {
         haptic.light();
       }
 
-      // ── Ritual invitation ────────────────────────────────
-      if (freshState.ritualTriggered && !freshState.ritualComplete) {
+      // ── Ritual invitation (only on final-draw summary) ───
+      if (gameDrawIndex >= 3 && freshState.ritualTriggered && !freshState.ritualComplete) {
         ritualInviteEl.style.display = '';
         const llmRitualInvite = getOracleText('ritualInvite');
         ritualInviteEl.innerHTML = `
