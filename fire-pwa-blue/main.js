@@ -9,6 +9,7 @@ import { initSplash } from './screens/splash.js';
 import { initFirstReveal } from './screens/first-reveal.js';
 import { initReveal } from './screens/reveal.js';
 import { initResult } from './screens/result.js';
+import { initBridge } from './screens/bridge.js';
 import { initRitual } from './screens/ritual.js';
 import { initSoulProfile } from './screens/soul-profile.js';
 
@@ -52,6 +53,7 @@ async function boot() {
   initFirstReveal();
   initReveal();
   initResult();
+  initBridge();
   initRitual();
   initSoulProfile();
 

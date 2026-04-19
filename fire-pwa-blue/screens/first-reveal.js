@@ -205,8 +205,17 @@ export function initFirstReveal() {
 
       // Re-read state after potential earnEntries mutation
       const freshState = getState();
-      const numbers = oraclePick(freshState.soulProfile);
-      updateState({ currentNumbers: numbers });
+      // If Oracle announced a declaration on the bridge screen, honor it —
+      // currentNumbers are already set there. Otherwise fall back to oraclePick.
+      let numbers;
+      if (freshState.pendingDeclaration && Array.isArray(freshState.currentNumbers) && freshState.currentNumbers.length === 6) {
+        numbers = [...freshState.currentNumbers];
+        if (CONFIG.DEBUG) console.log(`[FIRE][First-Reveal] Honoring declaration: ${freshState.pendingDeclaration.kind}`);
+        updateState({ pendingDeclaration: null });
+      } else {
+        numbers = oraclePick(freshState.soulProfile);
+        updateState({ currentNumbers: numbers });
+      }
 
       function validateNumbers() {
         const isUnique = new Set(numbers).size === numbers.length;

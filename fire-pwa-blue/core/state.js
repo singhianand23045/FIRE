@@ -92,6 +92,10 @@ function defaultState() {
     mood: 'casual',            // 'casual' | 'warming' | 'serious' | 'focused'
     moodHistory: [],           // last 20 mood values
     oracleCache: null,         // { mood, texts: {...}, params: {...}, fetchedAt, consumed }
+
+    // ── Game-boundary bridge ──────────────────────────────
+    lastGameSnapshot: null,    // snapshot of last completed game, used by bridge screen
+    pendingDeclaration: null,  // { kind, executedAt } set by bridge, consumed by first-reveal
   };
 }
 

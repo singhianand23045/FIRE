@@ -454,6 +454,57 @@ export const MSGS_GATHERING = [
   'The Oracle is here. Pull again.',
 ];
 
+// ── Bridge screen · Oracle declarations (5 per strategy, 25 total) ─
+// RULE: 8 words max. Cryptic, mystical, never specific about numbers.
+
+export const DECLARATIONS_LUCKY = [
+  'The Oracle plays the winners again.',
+  'What found you once. Let it find you twice.',
+  'Your winning threads. The Oracle pulls them back.',
+  'The veil remembers what blazed.',
+  'Playing what the veil already favored.',
+];
+
+export const DECLARATIONS_HOT = [
+  'The Oracle plays the fire.',
+  'What burns brightest. The Oracle chooses.',
+  'Numbers the veil keeps returning to.',
+  'The Oracle follows the heat.',
+  'Playing where the current runs.',
+];
+
+export const DECLARATIONS_COLD = [
+  'The Oracle turns to the forgotten.',
+  'Playing the numbers waiting in shadow.',
+  'What was silent. The Oracle calls forward.',
+  'The unchosen. Their turn arrives.',
+  'The veil reaches into the cold.',
+];
+
+export const DECLARATIONS_HOROSCOPE = [
+  'The stars whisper their own picks.',
+  'Your soul speaks. The Oracle listens.',
+  'Numbers born from your sign.',
+  'The alignment chooses for you.',
+  'Playing what the heavens drew for you.',
+];
+
+export const DECLARATIONS_REPEAT = [
+  'The Oracle returns your chosen.',
+  'Your touch left a mark. The veil honors it.',
+  'What you warmed. The Oracle plays again.',
+  'Your numbers. Kept close.',
+  'The veil lifts what you named yours.',
+];
+
+export const DECLARATIONS_FRESH = [
+  'The Oracle plays fresh.',
+  'New numbers. New veil.',
+  'The Oracle begins unmarked.',
+  'The slate clears. Draw anew.',
+  'The veil resets.',
+];
+
 // ── Post-result toast whispers · passive players (10) ────────
 export const WHISPERS_AGAIN_PASSIVE = [
   'The veil opens for the swift.',
