@@ -19,7 +19,7 @@ import { syncPayoutToFirebase } from '../core/firebase.js';
 import { getDeviceId } from '../core/device.js';
 import { attachDevTrigger } from './devmode.js';
 import { getAdaptiveResultParams } from '../engine/adapt.js';
-import { getOracleText, getOracleParams, callOracle, getCurrentMood } from '../engine/oracle-llm.js';
+import { getOracleText, getOracleParams, callOracle, getCurrentMood, consumeOracleCache } from '../engine/oracle-llm.js';
 import { snapshotLastGame } from '../engine/declaration.js';
 import {
   MSGS_BLAZES, MSGS_TRIPLE, MSGS_BUILDING, MSGS_GATHERING,
@@ -263,13 +263,13 @@ export function initResult() {
       ? `<span class="game-summary__total-money">+${_fmtMoney(totalMoney)}</span>`
       : '';
 
-    // Build celebration line — always computed from actual game results
+    // Build celebration line — prize info if any, else LLM-generated summary line
     const parts = [];
     if (totalEntries > 0) parts.push(`+${totalEntries} entries`);
     if (totalMoney > 0) parts.push(`+${_fmtMoney(totalMoney)}`);
     const celebLine = parts.length > 0
       ? parts.join(' · ')
-      : 'The Oracle watches. Your time comes.';
+      : (getOracleText('gameSummaryLine') || 'The Oracle watches. Your time comes.');
 
     return `
       <div class="game-end">
@@ -329,8 +329,8 @@ export function initResult() {
       // ── Oracle eye state ────────────────────────────────
       setOracleEyeWin(eye, matchCount >= 4);
 
-      // ── Tier label (always from current draw — LLM cache may be stale) ─
-      tierLabelEl.textContent = TIER_LABELS[tier] || 'The Oracle Speaks';
+      // ── Tier label (LLM-first, falls back to static) ───
+      tierLabelEl.textContent = getOracleText('tierLabel') || TIER_LABELS[tier] || 'The Oracle Speaks';
 
       // ── Score number ────────────────────────────────────
       scoreEl.textContent = matchCount;
@@ -344,13 +344,13 @@ export function initResult() {
         scoreSubEl.textContent = `${matchCount} ${matchCount === 1 ? 'Match' : 'Matches'}`;
       }
 
-      // ── Oracle message — static pool only (LLM cache is from previous draw) ─
+      // ── Oracle message (LLM-first with current-draw context, falls back to static pool) ─
       if (isWin) {
         const msgPool = {
           blazes: MSGS_BLAZES, triple: MSGS_TRIPLE,
           building: MSGS_BUILDING, gathering: MSGS_GATHERING,
         }[tier] ?? MSGS_GATHERING;
-        oracleMsgEl.innerHTML = pick(msgPool, `oracle_${tier}`);
+        oracleMsgEl.innerHTML = getOracleText('oracleMessage') || pick(msgPool, `oracle_${tier}`);
         oracleMsgEl.style.display = '';
       } else {
         oracleMsgEl.style.display = 'none';
@@ -524,17 +524,22 @@ export function initResult() {
         resultDwellMs: dwellMs,
       });
 
-      // Fire async LLM call — pre-fetches text for the NEXT set of screens.
-      // Non-blocking: game continues immediately, cache is populated in background.
-      const nearMisses = (_params.nearMissData?.nearMisses || [])
-        .filter(nm => nm.proximity === 'very_close' || nm.proximity === 'close')
-        .map(nm => ({ player: nm.playerNumber, drawn: nm.drawnNumber, distance: nm.distance }));
-
-      const triggerPoint = (state.gameDrawIndex >= 3) ? 'game_complete' : 'result_exit';
-      callOracle(triggerPoint, {
-        nearMissNumbers: nearMisses,
-        gameResults: state.gameResults || [],
-      });
+      // Mid-game: consume the cache so draw N+1's result screen falls back to
+      // static if the reveal_start LLM call for draw N+1 hasn't populated fresh
+      // text yet. Game-complete: leave cache intact so the next game's first-reveal
+      // can still read openingQuote (it self-consumes after use), and fire a final
+      // LLM call with full game context.
+      if (state.gameDrawIndex >= 3) {
+        const nearMisses = (_params.nearMissData?.nearMisses || [])
+          .filter(nm => nm.proximity === 'very_close' || nm.proximity === 'close')
+          .map(nm => ({ player: nm.playerNumber, drawn: nm.drawnNumber, distance: nm.distance }));
+        callOracle('game_complete', {
+          nearMissNumbers: nearMisses,
+          gameResults: state.gameResults || [],
+        });
+      } else {
+        consumeOracleCache();
+      }
 
       particlesEl.innerHTML = '';
       clearTimeout(_autoTimer);
@@ -564,7 +569,10 @@ export function initResult() {
 
   // ── Helper: build near-miss text ─────────────────────────
   function _buildNearMissText(nearMissData, drawn) {
-    // LLM cache is from previous draw — skip it, use live near-miss data
+    // LLM prefetched at reveal enter with current-draw data — use it first
+    const llmNarrative = getOracleText('nearMissNarrative');
+    if (llmNarrative) return llmNarrative;
+
     const { matchCount } = _params.score ?? { matchCount: 0 };
 
     if (!nearMissData || matchCount === 0) {

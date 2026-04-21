@@ -24,7 +24,7 @@ import { whisper } from '../components/toast.js';
 import { CONFIG } from '../config.js';
 import { getDevForceMatches, _constructForcedDraw } from './devmode.js';
 import { evt_drawResult } from '../core/analytics.js';
-import { getOracleText, getOracleParams } from '../engine/oracle-llm.js';
+import { getOracleText, getOracleParams, callOracle } from '../engine/oracle-llm.js';
 
 // ── Non-repeating random picker ──────────────────────────────
 const _usedIndices = {};
@@ -108,6 +108,17 @@ export function initReveal() {
 
       const score = scoreDraw(numbers, drawn, 0, 1);
       const nearMiss = computeNearMisses(numbers, drawn);
+
+      // Fire LLM prefetch with CURRENT draw's data so result screen reads fresh, non-stale text.
+      // Reveal animation gives ~20s runway for the request.
+      callOracle('reveal_start', {
+        playerNumbers: numbers,
+        lastDrawnNumbers: drawn,
+        lastMatchCount: score.matchCount,
+        nearMissNumbers: nearMiss.nearMisses
+          .filter(nm => nm.proximity === 'very_close' || nm.proximity === 'close')
+          .map(nm => ({ player: nm.playerNumber, drawn: nm.drawnNumber, distance: nm.distance })),
+      });
 
       // Pre-compute historical match classes for player numbers
       const historicalClasses = {};
