@@ -50,6 +50,18 @@ export function getAdaptiveBoostOdds() {
 
 // ── Result-screen UX parameters ─────────────────────────────
 
+// ── Adaptive pool selector ──────────────────────────────────
+// Given neutral/passive/active variants of a copy pool, returns the
+// pool matching current engagement. Used by reveal.js to pick
+// whisper pools that match the player's engagement state.
+
+export function pickAdaptivePool(neutral, passive, active) {
+  const engagement = classifyEngagement();
+  if (engagement === 'passive') return passive;
+  if (engagement === 'active')  return active;
+  return neutral;
+}
+
 export function getAdaptiveResultParams() {
   const engagement = classifyEngagement();
 
