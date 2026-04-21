@@ -110,17 +110,134 @@ export function initFirstReveal() {
     goto('soul-profile', { viewOnly: true });
   });
 
-  el.addEventListener('pointerdown', (e) => {
-    if (btn.contains(e.target)) return;
-    showSwipeHint();
-  });
-
   el.appendChild(eyeWrap);
   el.appendChild(quote);
   el.appendChild(numbersRow);
   el.appendChild(swipeHint);
   el.appendChild(ctaWrap);
   el.appendChild(profileLink);
+
+  // Screen-level swipe handler — fat-finger friendly.
+  // A pointerdown anywhere on the screen (except the CTA and profile link)
+  // routes the swipe to the ball in the nearest X column.
+  el.style.touchAction = 'none';
+
+  let _activeBallIdx = -1;
+  let _activePointerId = null;
+  let _swipeStartY = 0;
+  let _isSwiping = false;
+  let _didSwipe = false;
+
+  function findNearestBallByX(clientX) {
+    let closestIdx = -1;
+    let closestDist = Infinity;
+    for (let j = 0; j < _ballRefs.length; j++) {
+      const ref = _ballRefs[j];
+      if (!ref || !ref.el) continue;
+      const r = ref.el.getBoundingClientRect();
+      const center = r.left + r.width / 2;
+      const dist = Math.abs(clientX - center);
+      if (dist < closestDist) {
+        closestDist = dist;
+        closestIdx = j;
+      }
+    }
+    return closestIdx;
+  }
+
+  el.addEventListener('pointerdown', (e) => {
+    if (btn.contains(e.target)) return;
+    if (profileLink.contains(e.target)) return;
+    if (!_ballRefs.length) return;
+
+    const idx = findNearestBallByX(e.clientX);
+    if (idx < 0) return;
+
+    _activeBallIdx = idx;
+    _activePointerId = e.pointerId;
+    _swipeStartY = e.clientY;
+    _isSwiping = true;
+    _didSwipe = false;
+    showSwipeHint();
+
+    try { el.setPointerCapture(e.pointerId); } catch (_) {}
+
+    const ball = _ballRefs[idx].el;
+    if (!ball.classList.contains('is-warm')) {
+      ball.classList.add('is-warming');
+    }
+  });
+
+  el.addEventListener('pointermove', (e) => {
+    if (!_isSwiping || e.pointerId !== _activePointerId) return;
+    const i = _activeBallIdx;
+    const ref = _ballRefs[i];
+    if (!ref) return;
+    const ball = ref.el;
+    const deltaY = e.clientY - _swipeStartY;
+    if (Math.abs(deltaY) <= 30) return;
+
+    _didSwipe = true;
+    dismissSwipeHint();
+    ball.classList.remove('is-warming');
+    ball.classList.add('is-warm');
+
+    let n = _numbers[i];
+    if (deltaY < 0) n++;
+    else n--;
+    if (n > CONFIG.DRAW_POOL_SIZE) n = 1;
+    if (n < 1) n = CONFIG.DRAW_POOL_SIZE;
+
+    ref.setNumber(n);
+    _swipeStartY = e.clientY;
+    haptic.light();
+    _pendingNumberChanges++;
+    pulseBackground(ball);
+
+    // ── Oracle reaction: shift one ball to the LEFT (once per draw)
+    if (!_oracleReacted) {
+      _oracleReacted = true;
+      let targetIdx;
+      if (i === 0) {
+        targetIdx = _numbers.length - 1;
+      } else {
+        const leftSlots = [];
+        for (let j = 0; j < i; j++) leftSlots.push(j);
+        targetIdx = leftSlots[Math.floor(Math.random() * leftSlots.length)];
+      }
+      const usedNums = new Set(_numbers);
+      const candidates = oraclePick(getState().soulProfile);
+      let newNum = candidates.find(num => !usedNums.has(num));
+      if (!newNum) {
+        do { newNum = Math.floor(Math.random() * CONFIG.DRAW_POOL_SIZE) + 1; }
+        while (usedNums.has(newNum));
+      }
+      setTimeout(() => {
+        if (_ballRefs[targetIdx]) {
+          _ballRefs[targetIdx].setNumber(newNum);
+          _ballRefs[targetIdx].el.classList.add('oracle-nudge');
+          setTimeout(() => _ballRefs[targetIdx].el.classList.remove('oracle-nudge'), 1200);
+          haptic.light();
+          validateNumbers();
+        }
+      }, 350);
+    }
+
+    validateNumbers();
+  });
+
+  function stopSwipe(e) {
+    if (e.pointerId !== _activePointerId) return;
+    if (_isSwiping && _activeBallIdx >= 0 && !_didSwipe) {
+      const ref = _ballRefs[_activeBallIdx];
+      if (ref && ref.el) ref.el.classList.remove('is-warming');
+    }
+    _isSwiping = false;
+    _activeBallIdx = -1;
+    _activePointerId = null;
+  }
+  el.addEventListener('pointerup', stopSwipe);
+  el.addEventListener('pointercancel', stopSwipe);
 
   // ── Tap handler ──────────────────────────────────────────
   btn.addEventListener('click', () => {
@@ -161,10 +278,32 @@ export function initFirstReveal() {
   let _pendingNumberChanges = 0;
   let _screenEnterAt = 0;
 
-  // ── Oracle reaction: one ball shifts when the player changes a number
-  // Each ball registers a setNumber() so the Oracle can reach into its closure.
+  // ── Oracle reaction: one ball shifts when the player changes a number.
+  // Each ball registers a setNumber() so the Oracle (and the screen-level
+  // swipe handler above) can update the ball and _numbers in lockstep.
   let _oracleReacted = false;
   const _ballRefs = [];
+  let _numbers = [];
+
+  function validateNumbers() {
+    const isUnique = new Set(_numbers).size === _numbers.length;
+    if (!isUnique) {
+      btn.classList.add('reveal-btn--disabled');
+      btn.innerHTML = 'NUMBERS MUST BE UNIQUE';
+    } else {
+      const affordable = canPlay();
+      if (!affordable) {
+        btn.classList.add('reveal-btn--disabled');
+        noEntriesMsg.style.display = '';
+      } else {
+        btn.classList.remove('reveal-btn--disabled');
+        noEntriesMsg.style.display = 'none';
+      }
+      const llmCta = getOracleText('ctaLabel');
+      btn.innerHTML = `<div class="reveal-btn__glow"></div>${llmCta || 'REVEAL MY FATE'}`;
+      updateState({ currentNumbers: _numbers });
+    }
+  }
 
   // ── Register ─────────────────────────────────────────────
   registerScreen({
@@ -207,34 +346,13 @@ export function initFirstReveal() {
       const freshState = getState();
       // If Oracle announced a declaration on the bridge screen, honor it —
       // currentNumbers are already set there. Otherwise fall back to oraclePick.
-      let numbers;
       if (freshState.pendingDeclaration && Array.isArray(freshState.currentNumbers) && freshState.currentNumbers.length === 6) {
-        numbers = [...freshState.currentNumbers];
+        _numbers = [...freshState.currentNumbers];
         if (CONFIG.DEBUG) console.log(`[FIRE][First-Reveal] Honoring declaration: ${freshState.pendingDeclaration.kind}`);
         updateState({ pendingDeclaration: null });
       } else {
-        numbers = oraclePick(freshState.soulProfile);
-        updateState({ currentNumbers: numbers });
-      }
-
-      function validateNumbers() {
-        const isUnique = new Set(numbers).size === numbers.length;
-        if (!isUnique) {
-          btn.classList.add('reveal-btn--disabled');
-          btn.innerHTML = 'NUMBERS MUST BE UNIQUE';
-        } else {
-          const affordable = canPlay();
-          if (!affordable) {
-            btn.classList.add('reveal-btn--disabled');
-            noEntriesMsg.style.display = '';
-          } else {
-            btn.classList.remove('reveal-btn--disabled');
-            noEntriesMsg.style.display = 'none';
-          }
-          const llmCta = getOracleText('ctaLabel');
-          btn.innerHTML = `<div class="reveal-btn__glow"></div>${llmCta || 'REVEAL MY FATE'}`;
-          updateState({ currentNumbers: numbers });
-        }
+        _numbers = oraclePick(freshState.soulProfile);
+        updateState({ currentNumbers: _numbers });
       }
 
       // Show profile link once ritual is complete
@@ -246,108 +364,20 @@ export function initFirstReveal() {
         profileLink.style.display = 'none';
       }
 
-      // Render number balls
+      // Render number balls. Pointer handling lives at the screen level
+      // (see init above) so swipes anywhere outside the CTA still reach
+      // the nearest ball by X.
       numbersRow.innerHTML = '';
-      numbers.forEach((n, i) => {
+      _numbers.forEach((n, i) => {
         const ball = document.createElement('div');
         ball.className = `num-ball num-ball--lg num-ball--player anim-float delay-${i + 1}`;
         ball.textContent = n;
-        ball.style.touchAction = 'none';
         ball.style.cursor = 'ns-resize';
 
-        // Register so Oracle reaction can update this ball from another closure
         _ballRefs[i] = {
           el: ball,
-          setNumber(v) { n = v; numbers[i] = v; ball.textContent = v; },
+          setNumber(v) { _numbers[i] = v; ball.textContent = v; },
         };
-
-        let startY = 0;
-        let isDragging = false;
-        let didSwipe = false;
-
-        ball.addEventListener('pointerdown', (e) => {
-          isDragging = true;
-          didSwipe = false;
-          startY = e.clientY;
-          ball.setPointerCapture(e.pointerId);
-          // Start warming — gradual amber shift while holding
-          if (!ball.classList.contains('is-warm')) {
-            ball.classList.add('is-warming');
-          }
-        });
-
-        ball.addEventListener('pointermove', (e) => {
-          if (!isDragging) return;
-          const deltaY = e.clientY - startY;
-          if (Math.abs(deltaY) > 30) {
-            didSwipe = true;
-            dismissSwipeHint();
-            // Lock in warm — this is now the player's number
-            ball.classList.remove('is-warming');
-            ball.classList.add('is-warm');
-
-            if (deltaY < 0) {
-              n++;
-            } else {
-              n--;
-            }
-            // wrap bounds
-            if (n > CONFIG.DRAW_POOL_SIZE) n = 1;
-            if (n < 1) n = CONFIG.DRAW_POOL_SIZE;
-
-            ball.textContent = n;
-            numbers[i] = n;
-            startY = e.clientY;
-            haptic.light();
-            _pendingNumberChanges++; // track engagement signal
-            pulseBackground(ball); // gravitational light shift
-
-            // ── Oracle reaction: shift one ball to the LEFT (once per draw)
-            if (!_oracleReacted) {
-              _oracleReacted = true;
-              // Pick target: leftmost wraps to rightmost, else random from the left
-              let targetIdx;
-              if (i === 0) {
-                targetIdx = numbers.length - 1;
-              } else {
-                const leftSlots = [];
-                for (let j = 0; j < i; j++) leftSlots.push(j);
-                targetIdx = leftSlots[Math.floor(Math.random() * leftSlots.length)];
-              }
-              // Soul-profile-aware number (falls back to random if no profile)
-              const usedNums = new Set(numbers);
-              const candidates = oraclePick(getState().soulProfile);
-              let newNum = candidates.find(num => !usedNums.has(num));
-              if (!newNum) {
-                do { newNum = Math.floor(Math.random() * CONFIG.DRAW_POOL_SIZE) + 1; }
-                while (usedNums.has(newNum));
-              }
-
-              // Delay so the player sees their own change first
-              setTimeout(() => {
-                if (_ballRefs[targetIdx]) {
-                  _ballRefs[targetIdx].setNumber(newNum);
-                  _ballRefs[targetIdx].el.classList.add('oracle-nudge');
-                  setTimeout(() => _ballRefs[targetIdx].el.classList.remove('oracle-nudge'), 1200);
-                  haptic.light();
-                  validateNumbers();
-                }
-              }, 350);
-            }
-
-            validateNumbers();
-          }
-        });
-
-        const stopDrag = () => {
-          if (isDragging && !didSwipe) {
-            // Cool back — player didn't change this number
-            ball.classList.remove('is-warming');
-          }
-          isDragging = false;
-        };
-        ball.addEventListener('pointerup', stopDrag);
-        ball.addEventListener('pointercancel', stopDrag);
 
         numbersRow.appendChild(ball);
       });
