@@ -25,7 +25,8 @@ export function callOracle(triggerPoint, extra = {}) {
   const state = getState();
 
   // Don't call on very first draw — no data yet
-  if ((state.drawCount || 0) < 1 && triggerPoint !== 'session_start') {
+  // Exceptions: session_start (warmup) and reveal_start (current-draw prefetch)
+  if ((state.drawCount || 0) < 1 && triggerPoint !== 'session_start' && triggerPoint !== 'reveal_start') {
     if (CONFIG.DEBUG) console.log('[FIRE][Oracle] Skipping — no draws yet');
     return;
   }
@@ -118,6 +119,8 @@ export function getOracleText(field) {
   const cache = state.oracleCache;
 
   if (!cache || !cache.texts) return null;
+  // Consumed cache falls back to static — prevents stale text bleeding into the next draw
+  if (cache.consumed) return null;
 
   // Stale after 5 minutes
   const age = Date.now() - (cache.fetchedAt || 0);
