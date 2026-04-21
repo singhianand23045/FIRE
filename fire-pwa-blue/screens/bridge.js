@@ -12,21 +12,27 @@ import { registerScreen, goto } from '../core/router.js';
 import { getState, updateState } from '../core/state.js';
 import { chooseDeclaration, executeDeclaration } from '../engine/declaration.js';
 import { classifyEngagement } from '../engine/adapt.js';
+import { BRIDGE_LABELS } from '../data/quotes.js';
 import { CONFIG } from '../config.js';
 
-// Mood-based dwell: passive players linger, active players move faster.
+// Mood-based dwell: doubled from prior values so players can absorb.
+// passive players linger longer, active players move faster.
 function dwellMsForMood() {
   const engagement = classifyEngagement();
-  if (engagement === 'passive') return 10000;
-  if (engagement === 'active')  return 6000;
-  return 8000;
+  if (engagement === 'passive') return 20000;
+  if (engagement === 'active')  return 12000;
+  return 16000;
 }
 
-const BOND_WORDS = ['THE VEIL HELD', 'ONE BOND', 'TWO BONDS', 'THREE BONDS', 'FOUR BONDS', 'FIVE BONDS', 'SIX BONDS'];
-function bondHeader(total) {
-  if (total <= 0) return BOND_WORDS[0];
-  if (total >= BOND_WORDS.length) return `${total} BONDS`;
-  return BOND_WORDS[total];
+// Non-repeating picker so the same label doesn't flash back-to-back.
+const _usedLabels = [];
+function pickLabel() {
+  if (_usedLabels.length >= BRIDGE_LABELS.length) _usedLabels.length = 0;
+  let idx;
+  do { idx = Math.floor(Math.random() * BRIDGE_LABELS.length); }
+  while (_usedLabels.includes(idx));
+  _usedLabels.push(idx);
+  return BRIDGE_LABELS[idx];
 }
 
 export function initBridge() {
@@ -72,9 +78,8 @@ export function initBridge() {
       if (snap && Array.isArray(snap.results) && snap.results.length > 0 && Array.isArray(snap.lastPlayerNumbers)) {
         const playerNumbers = snap.lastPlayerNumbers;
         const warmIndices = snap.warmBallIndices || [];
-        const totalMatches = snap.results.reduce((s, r) => s + (r.matchCount || 0), 0);
 
-        headerEl.textContent = bondHeader(totalMatches);
+        headerEl.textContent = pickLabel();
 
         // Player numbers — is-matched-dN per draw matched, is-warm for swiped balls.
         const historicalClasses = {};

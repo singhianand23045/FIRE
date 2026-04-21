@@ -454,6 +454,19 @@ export const MSGS_GATHERING = [
   'The Oracle is here. Pull again.',
 ];
 
+// ── Bridge screen · ambient mystic labels (rotating, no facts) ───
+// Shown at the top of the bridge screen in place of a literal
+// match count. Quiet, present-tense, no clingy "what was" retrospection.
+
+export const BRIDGE_LABELS = [
+  'THE VEIL REMEMBERS',
+  'THE PATTERN REMAINS',
+  'THE ORACLE SEES',
+  'THE THREADS STILL HOLD',
+  'IT IS WRITTEN',
+  'THE PATTERN SPEAKS',
+];
+
 // ── Bridge screen · Oracle declarations (5 per strategy, 25 total) ─
 // RULE: 8 words max. Cryptic, mystical, never specific about numbers.
 
