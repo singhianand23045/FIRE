@@ -71,6 +71,7 @@
 #screen-first-reveal,
 #screen-reveal,
 #screen-result,
+#screen-bridge,
 #screen-ritual,
 #screen-soul-profile {
   padding-top: var(--jackpot-bar-height);
@@ -819,3 +820,74 @@
   transform: scale(0.97);
   box-shadow: 0 2px 16px rgba(212, 168, 67, 0.20);
 }
+
+/* ── Bridge screen (between games) ────────────────────────── */
+
+#screen-bridge {
+  justify-content: center;
+  gap: var(--s6);
+  padding-left: var(--s4);
+  padding-right: var(--s4);
+}
+
+.bridge__eyewrap {
+  position: relative;
+  z-index: 1;
+  margin-bottom: var(--s4);
+}
+
+.bridge__recap-label {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(212, 168, 67, 0.55);
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.bridge__recap-label.is-visible {
+  opacity: 1;
+}
+
+.bridge__recap-row {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  flex-wrap: nowrap;
+  opacity: 0;
+  transition: opacity 0.7s ease;
+}
+
+.bridge__recap-row.is-visible {
+  opacity: 1;
+}
+
+.bridge__declaration {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 300;
+  font-style: italic;
+  color: var(--plat);
+  text-align: center;
+  line-height: 1.5;
+  max-width: 320px;
+  opacity: 0;
+  transition: opacity 1s ease, transform 1s ease;
+  transform: translateY(6px);
+  padding: 0 var(--s4);
+  margin-top: var(--s4);
+}
+
+.bridge__declaration.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+

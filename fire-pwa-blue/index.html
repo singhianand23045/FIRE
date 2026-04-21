@@ -164,6 +164,10 @@
     <section id="screen-result" class="screen" role="region" aria-label="Your Result" aria-live="polite">
     </section>
 
+    <!-- ── SCREEN 3.5: Bridge (between games) ────────── -->
+    <section id="screen-bridge" class="screen" role="region" aria-label="The Oracle Between Games" aria-live="polite">
+    </section>
+
     <!-- ── SCREENS 4–13: Phase 2+ (empty until built) ── -->
     <section id="screen-ritual" class="screen" role="region" aria-label="The Ritual"></section>
     <section id="screen-soul-profile" class="screen" role="region" aria-label="Soul Profile"></section>
@@ -196,6 +200,7 @@
     import { initFirstReveal } from '/screens/first-reveal.js';
     import { initReveal } from '/screens/reveal.js';
     import { initResult } from '/screens/result.js';
+    import { initBridge } from '/screens/bridge.js';
     import { initRitual } from '/screens/ritual.js';
     import { initSoulProfile } from '/screens/soul-profile.js';
     // devmode is self-initialising via attachDevTrigger — no explicit init needed
@@ -250,6 +255,7 @@
       initFirstReveal();
       initReveal();
       initResult();
+      initBridge();
       initRitual();
       initSoulProfile();
 

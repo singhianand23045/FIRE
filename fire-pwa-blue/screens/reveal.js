@@ -7,13 +7,18 @@
 import { registerScreen, goto } from '../core/router.js';
 import { getState, recordDraw } from '../core/state.js';
 import { boostedDraw, normalDraw, adaptiveDraw, computeNearMisses, scoreDraw } from '../engine/draw.js';
-import { getAdaptiveBoostOdds, classifyEngagement } from '../engine/adapt.js';
+import { getAdaptiveBoostOdds, classifyEngagement, pickAdaptivePool } from '../engine/adapt.js';
 import { haptic, playSound } from '../core/device.js';
 import { playTone, startAmbient, stopAmbient } from '../engine/audio.js';
 import {
-  WHISPERS_OPENING, WHISPERS_BALL_DROP, WHISPERS_FINAL_PAUSE,
-  WHISPERS_MATCH_1, WHISPERS_MATCH_2, WHISPERS_MATCH_3,
-  WHISPERS_MATCH_4, WHISPERS_MATCH_5,
+  WHISPERS_OPENING, WHISPERS_OPENING_PASSIVE, WHISPERS_OPENING_ACTIVE,
+  WHISPERS_BALL_DROP, WHISPERS_BALL_DROP_PASSIVE, WHISPERS_BALL_DROP_ACTIVE,
+  WHISPERS_FINAL_PAUSE, WHISPERS_FINAL_PAUSE_PASSIVE, WHISPERS_FINAL_PAUSE_ACTIVE,
+  WHISPERS_MATCH_1, WHISPERS_MATCH_1_PASSIVE, WHISPERS_MATCH_1_ACTIVE,
+  WHISPERS_MATCH_2, WHISPERS_MATCH_2_PASSIVE, WHISPERS_MATCH_2_ACTIVE,
+  WHISPERS_MATCH_3, WHISPERS_MATCH_3_PASSIVE, WHISPERS_MATCH_3_ACTIVE,
+  WHISPERS_MATCH_4, WHISPERS_MATCH_4_PASSIVE, WHISPERS_MATCH_4_ACTIVE,
+  WHISPERS_MATCH_5, WHISPERS_MATCH_5_PASSIVE, WHISPERS_MATCH_5_ACTIVE,
 } from '../data/quotes.js';
 import { whisper } from '../components/toast.js';
 import { CONFIG } from '../config.js';
@@ -197,7 +202,10 @@ export function initReveal() {
 
       // ── Set initial whisper (LLM or static pool) ──────
       const llmWhisper = getOracleText('revealWhisper');
-      whisperEl.textContent = llmWhisper || pickUnique(WHISPERS_OPENING, 'opening');
+      whisperEl.textContent = llmWhisper || pickUnique(
+        pickAdaptivePool(WHISPERS_OPENING, WHISPERS_OPENING_PASSIVE, WHISPERS_OPENING_ACTIVE),
+        'opening',
+      );
 
       // ── Start ambient drone ───────────────────────────
       startAmbient();
@@ -215,11 +223,11 @@ export function initReveal() {
 
       const MATCH_WHISPER_POOLS = [
         null,
-        WHISPERS_MATCH_1,
-        WHISPERS_MATCH_2,
-        WHISPERS_MATCH_3,
-        WHISPERS_MATCH_4,
-        WHISPERS_MATCH_5,
+        pickAdaptivePool(WHISPERS_MATCH_1, WHISPERS_MATCH_1_PASSIVE, WHISPERS_MATCH_1_ACTIVE),
+        pickAdaptivePool(WHISPERS_MATCH_2, WHISPERS_MATCH_2_PASSIVE, WHISPERS_MATCH_2_ACTIVE),
+        pickAdaptivePool(WHISPERS_MATCH_3, WHISPERS_MATCH_3_PASSIVE, WHISPERS_MATCH_3_ACTIVE),
+        pickAdaptivePool(WHISPERS_MATCH_4, WHISPERS_MATCH_4_PASSIVE, WHISPERS_MATCH_4_ACTIVE),
+        pickAdaptivePool(WHISPERS_MATCH_5, WHISPERS_MATCH_5_PASSIVE, WHISPERS_MATCH_5_ACTIVE),
       ];
 
       drawn.forEach((drawnNum, i) => {
@@ -268,7 +276,10 @@ export function initReveal() {
 
             if (matchCountSoFar === 0 && i < 5) {
               setTimeout(() => {
-                whisperEl.textContent = pickUnique(WHISPERS_BALL_DROP, 'ball_drop');
+                whisperEl.textContent = pickUnique(
+                  pickAdaptivePool(WHISPERS_BALL_DROP, WHISPERS_BALL_DROP_PASSIVE, WHISPERS_BALL_DROP_ACTIVE),
+                  'ball_drop',
+                );
               }, 300);
             }
           }
@@ -281,7 +292,10 @@ export function initReveal() {
       const resultTime = Math.round(22700 * pace);
 
       setTimeout(() => {
-        whisperEl.textContent = pickUnique(WHISPERS_FINAL_PAUSE, 'final_pause');
+        whisperEl.textContent = pickUnique(
+          pickAdaptivePool(WHISPERS_FINAL_PAUSE, WHISPERS_FINAL_PAUSE_PASSIVE, WHISPERS_FINAL_PAUSE_ACTIVE),
+          'final_pause',
+        );
         haptic.heavy();
         playTone('pause');
       }, pauseTime);

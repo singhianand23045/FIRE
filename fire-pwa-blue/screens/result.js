@@ -20,6 +20,7 @@ import { getDeviceId } from '../core/device.js';
 import { attachDevTrigger } from './devmode.js';
 import { getAdaptiveResultParams } from '../engine/adapt.js';
 import { getOracleText, getOracleParams, callOracle, getCurrentMood, consumeOracleCache } from '../engine/oracle-llm.js';
+import { snapshotLastGame } from '../engine/declaration.js';
 import {
   MSGS_BLAZES, MSGS_TRIPLE, MSGS_BUILDING, MSGS_GATHERING,
   WHISPERS_AGAIN, WHISPERS_AGAIN_PASSIVE, WHISPERS_AGAIN_ACTIVE,
@@ -168,7 +169,7 @@ export function initResult() {
     clearTimeout(_autoTimer);
     _autoTimer = null;
     evt_replayTapped(getState().drawCount);
-    goto('first-reveal');
+    goto(getState().lastGameSnapshot ? 'bridge' : 'first-reveal');
   });
 
   // Build Oracle eye once, reuse
@@ -379,8 +380,11 @@ export function initResult() {
 
       if (gameDrawIndex >= 3) {
         // Final draw — show game summary + NEW GAME button
+        // Snapshot last game BEFORE completeGame in case future changes clear results
+        const snapshot = snapshotLastGame(freshState);
+        updateState({ lastGameSnapshot: snapshot });
         completeGame();
-        if (CONFIG.DEBUG) console.log('[FIRE][Game] Game complete after 3 draws');
+        if (CONFIG.DEBUG) console.log('[FIRE][Game] Game complete after 3 draws — snapshot taken');
 
         drawAreaEl.innerHTML = _buildGameEndHTML(freshState.gameResults, jackpot);
         actionsEl.style.display = '';
@@ -432,7 +436,7 @@ export function initResult() {
               againBtn.textContent = `STARTING...`;
               haptic.medium();
               evt_replayTapped(getState().drawCount);
-              goto('first-reveal');
+              goto(getState().lastGameSnapshot ? 'bridge' : 'first-reveal');
               return; // Stop ticking
             }
           }
@@ -551,7 +555,7 @@ export function initResult() {
   againBtn.addEventListener('click', () => {
     haptic.medium();
     evt_replayTapped(getState().drawCount);
-    goto('first-reveal');
+    goto(getState().lastGameSnapshot ? 'bridge' : 'first-reveal');
   });
 
   // ── Pick different numbers (draw 3 only) ─────────────────
