@@ -5,6 +5,23 @@
 // on the next game's starting numbers.
 //
 // VRR principle: trigger is unpredictable, execution is honored.
+//
+// Declaration eligibility filters (see _isEligible below):
+//   Lucky     — last game had ≥1 matched unique number
+//               (we need winning numbers to replay)
+//   Hot       — drawHistory has ≥10 draws
+//               (need enough draws for frequency to mean something)
+//   Cold      — drawHistory has ≥10 draws
+//               (same reason as Hot)
+//   Horoscope — state.ritualComplete === true AND
+//               state.soulProfile.weightedNumbers exists
+//               (can't pick horoscope numbers without a soul profile)
+//   Repeat    — last game has non-empty warmBallIndices AND
+//               non-empty lastPlayerNumbers
+//               (need amber balls the player chose to replay them)
+//
+// Ineligible declarations are filtered before the weighted random.
+// If zero declarations are eligible, falls back to "Fresh" (oraclePick).
 // ─────────────────────────────────────────────────────────────
 
 import { CONFIG } from '../config.js';
