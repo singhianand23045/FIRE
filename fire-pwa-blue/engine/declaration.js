@@ -9,10 +9,11 @@
 // Declaration eligibility filters (see _isEligible below):
 //   Lucky     — last game had ≥1 matched unique number
 //               (we need winning numbers to replay)
-//   Hot       — drawHistory has ≥10 draws
-//               (need enough draws for frequency to mean something)
-//   Cold      — drawHistory has ≥10 draws
-//               (same reason as Hot)
+//   Hot       — drawHistory has ≥3 draws (one completed game)
+//               Window = all of drawHistory (ring-buffered at 200),
+//               so the window grows as the player plays: 3 after
+//               game 1, 15 after game 5, 30 after game 10, etc.
+//   Cold      — drawHistory has ≥3 draws (same window as Hot)
 //   Horoscope — state.ritualComplete === true AND
 //               state.soulProfile.weightedNumbers exists
 //               (can't pick horoscope numbers without a soul profile)
@@ -74,7 +75,9 @@ function _isEligible(kind, state, lastGame) {
     }
     case 'hot':
     case 'cold':
-      return (state.drawHistory || []).length >= 10;
+      // Eligible once the player has completed a full 3-draw game.
+      // Window grows with drawHistory (see executeDeclaration).
+      return (state.drawHistory || []).length >= 3;
     case 'horoscope':
       return !!state.ritualComplete && !!(state.soulProfile && state.soulProfile.weightedNumbers);
     case 'repeat':
@@ -166,13 +169,16 @@ export function executeDeclaration(kind, state) {
       if (lastGame) seeds = _uniqueMatched(lastGame);
       break;
     case 'hot': {
-      const last10 = (state.drawHistory || []).slice(-10);
-      seeds = _frequencyPick(last10, 'mostFrequent');
+      // Window = all of drawHistory (ring-buffered at 200 in state.js).
+      // Grows naturally with session play — 3 after game 1, 15 after
+      // game 5, 30 after game 10, etc.
+      const history = state.drawHistory || [];
+      seeds = _frequencyPick(history, 'mostFrequent');
       break;
     }
     case 'cold': {
-      const last10 = (state.drawHistory || []).slice(-10);
-      seeds = _frequencyPick(last10, 'leastFrequent');
+      const history = state.drawHistory || [];
+      seeds = _frequencyPick(history, 'leastFrequent');
       break;
     }
     case 'horoscope':
