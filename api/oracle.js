@@ -59,9 +59,14 @@ FOCUSED — Player is picking own numbers deliberately, studying past draws, hig
 - For SERIOUS: respect. "You read the veil now."
 - For FOCUSED: conspiracy. "Your 7 — I saw it too."
 
+## Distribution Diversity (String Seed of Thought)
+Before populating any text field, emit the "seed" field first: 16 random lowercase hex characters (0-9, a-f). Each call must produce a fresh, unpredictable seed — do not reuse patterns across calls.
+Then derive every text field's word choice, cadence, and imagery from that seed. Two calls with different seeds MUST produce lexically distinct outputs — different openers, different verbs, different metaphors. The seed is not shown to the player; it exists only to break the clustering that makes flavor text feel repetitive.
+
 ## Output Format
 Return ONLY valid JSON with this exact structure:
 {
+  "seed": "16 lowercase hex chars, e.g. '7a3f91c2b8e04d6a'",
   "mood": "casual|warming|serious|focused",
   "texts": {
     "openingQuote": "6 words ideal. 10 max. e.g. 'The Oracle found these for you.'",
