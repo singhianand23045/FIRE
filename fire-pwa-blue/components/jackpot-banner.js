@@ -60,7 +60,7 @@ function _buildBanner() {
       </div>
       <div class="jackpot-banner__center">
         <div class="jackpot-banner__label">JACKPOT</div>
-        <div class="jackpot-banner__amount" id="jackpot-amount">$100,000</div>
+        <div class="jackpot-banner__amount" id="jackpot-amount">$1,000</div>
       </div>
       <div class="jackpot-banner__right">
         <span class="jackpot-banner__sparkle">✦</span>
