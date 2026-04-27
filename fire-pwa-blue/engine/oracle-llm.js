@@ -97,6 +97,7 @@ export function callOracle(triggerPoint, extra = {}) {
 
       if (CONFIG.DEBUG) {
         console.log(`[FIRE][Oracle] Response — mood: ${prevMood} → ${newMood}`);
+        if (result.seed) console.log(`[FIRE][Oracle] Seed: ${result.seed}`);
         console.log('[FIRE][Oracle] Texts:', result.texts);
         console.log('[FIRE][Oracle] Params:', result.params);
       }
