@@ -38,9 +38,9 @@ export const CONFIG = {
   ENTRIES_PER_GAME: 30,           // cost per game (3 draws)
   CHECKIN_STREAK_REWARD: 30,      // entries awarded at 7-day streak
   HATRICK_BONUS_ENTRIES: 20,      // entries awarded for 3 consecutive win draws
-  JACKPOT_BASE: 100,              // fallback if Firebase unreachable
+  JACKPOT_BASE: 1000,             // fallback if Firebase unreachable
   JACKPOT_CAP: 9999999,
-  JACKPOT_PER_USER: 5,            // added per live concurrent user
+  JACKPOT_PER_USER: 1,            // added per live concurrent user
 
   // ── Streak ─────────────────────────────────────────────────
   STREAK_WIN_THRESHOLD: 3,        // matches needed to count as a win draw
