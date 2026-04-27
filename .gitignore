@@ -5,3 +5,5 @@ public/
 .vercel/
 .dyad/
 .gstack/
+.claude/
+.DS_Store
