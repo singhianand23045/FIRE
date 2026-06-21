@@ -42,12 +42,10 @@ export const CONFIG = {
   ACTIVE_PLAY_LANDING_VARIANT: 'A',  // 'A' foreshadow win | 'B' identical-until-legible
   ACTIVE_PLAY: {
     ENABLED: true,
-    SPIN_UP_MS: 250,        // ramp 0→cruise (× pace)
     IDLE_SETTLE_MS: 2000,   // auto-settle after this much NO interaction (× pace); resets on every touch
     SETTLE_MS: 850,         // do-nothing decel duration (× pace) — gradual roulette wind-down
-    HARD_LOCK_MS: 200,      // press-to-lock decel — snappy but soft-tailed (quintic), not a brick wall
+    HARD_LOCK_MS: 400,      // press-to-lock decel — quadratic, long enough to read as a roll-to-stop
     LOCK_HOLD_MS: 200,      // beat between a ball locking and the next ball spinning
-    FLARE_LEAD_MS: 300,     // variant A: gold "tell" pulse duration before the win-colour reveal
     SWIPE_DX_MIN: 18,       // horizontal px before a swipe registers
     SWIPE_GAIN: 0.010,      // px/ms velocity added per px swiped
     MAX_KINETIC: 3.0,       // px/ms momentum cap above cruise

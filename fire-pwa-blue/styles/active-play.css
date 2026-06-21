@@ -65,19 +65,18 @@
   animation: ballNearMiss 0.6s ease both;
 }
 
-/* Variant A "foreshadow": a winning ball throbs GOLD/amber (deliberately
-   distinct from the white win-flash) for FLARE_LEAD_MS before the win colour
-   reveals — a loud, clearly-perceptible "tell" that pre-loads the dopamine.
-   Two peaks (22% / 74%) = a visible "pulse-pulse" before the win lands. */
-.num-ball--draw.is-flare {
-  animation: ballFlareLoud var(--flare-dur, 0.3s) ease-out both;
+/* Variant A "foreshadow": a winning ball builds a GOLD aura DURING its slow-down
+   — while the reel is still blurred/moving and the number is NOT yet readable —
+   so you sense the win a beat before you can read it. Duration tracks the decel
+   time via --decel-dur; ease-in makes the glow intensify as the ball slows
+   ("heating up" toward the win). Variant B and all misses get no aura. */
+.num-ball--draw.dball--foreshadow {
+  animation: foreshadowGlow var(--decel-dur, 0.5s) ease-in both;
   z-index: 5;
 }
 
-@keyframes ballFlareLoud {
-  0%   { box-shadow: 0 0 0 rgba(255, 170, 60, 0);                                         transform: scale(1); }
-  22%  { box-shadow: 0 0 32px rgba(255, 170, 60, 0.95), 0 0 64px rgba(255, 120, 20, 0.6); transform: scale(1.24); }
-  48%  { box-shadow: 0 0 12px rgba(255, 170, 60, 0.45);                                   transform: scale(1.04); }
-  74%  { box-shadow: 0 0 32px rgba(255, 170, 60, 0.95), 0 0 64px rgba(255, 120, 20, 0.6); transform: scale(1.20); }
-  100% { box-shadow: 0 0 20px rgba(255, 170, 60, 0.40);                                   transform: scale(1); }
+@keyframes foreshadowGlow {
+  0%   { box-shadow: 0 0 6px rgba(255, 170, 60, 0.20); }
+  60%  { box-shadow: 0 0 20px rgba(255, 170, 60, 0.70), 0 0 40px rgba(255, 120, 20, 0.35); }
+  100% { box-shadow: 0 0 34px rgba(255, 170, 60, 0.98), 0 0 64px rgba(255, 120, 20, 0.60); }
 }

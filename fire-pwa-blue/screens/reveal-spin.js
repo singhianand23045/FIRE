@@ -26,10 +26,11 @@ import { playTone } from '../engine/audio.js';
 const BALL_W = 52; // .num-ball--lg width in px (keep in sync with components.css)
 
 const now = () => performance.now();
-const easeIn = (t) => t * t;
-// Quintic ease-out: fast early, long gentle tail so the ball glides to a stop
-// (velocity → 0 smoothly) instead of halting abruptly.
-const easeOut = (t) => 1 - Math.pow(1 - t, 5);
+// Quadratic ease-out = constant deceleration, how a real object slows under
+// friction: the slowdown is spread EVENLY across the duration instead of being
+// dumped in the first half (quintic covered 97% by the midpoint → felt like an
+// abrupt halt). This reads as a gradual roll-to-a-stop.
+const easeOut = (t) => 1 - (1 - t) * (1 - t);
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
 // ─────────────────────────────────────────────────────────────
@@ -47,7 +48,7 @@ const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 export function runSpinDraw(opts) {
   const { drawn, numbers, pace, drawAreaEl, getBall, onBallResolved, onAllResolved, variant } = opts;
   const cfg = CONFIG.ACTIVE_PLAY;
-  const cycleW = cfg.CYCLE_LEN * BALL_W;
+  const cycleW = cfg.CYCLE_LEN * BALL_W || BALL_W; // guard: never 0 (a 0 CYCLE_LEN would NaN the spin math)
   const reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
   const timers = new Set();
@@ -146,12 +147,6 @@ export function runSpinDraw(opts) {
     }, cfg.IDLE_SETTLE_MS * pace);
   }
 
-  function enterLive(rt) {
-    if (rt.phase !== 'spinup') return;
-    rt.phase = 'live';
-    armIdle(rt);
-  }
-
   // ── Decelerate to land EXACTLY on the predetermined number ──
   function startDecel(rt, durMs, minSpin) {
     if (rt.phase === 'decel' || rt.phase === 'locked') return;
@@ -166,6 +161,14 @@ export function runSpinDraw(opts) {
     rt.decelTarget = target;
     rt.decelDur = Math.max(60, durMs);
     rt.decelStart = now();
+
+    // Variant A "foreshadow": a winning ball builds a gold aura AS IT SLOWS —
+    // while the reel is still blurred and the number is not yet readable — so the
+    // tell LEADS the reveal instead of trailing it. (Variant B / misses: no aura.)
+    if (variant === 'A' && rt.isHit) {
+      rt.ballEl.style.setProperty('--decel-dur', rt.decelDur + 'ms');
+      rt.ballEl.classList.add('dball--foreshadow');
+    }
   }
 
   function lockBall(rt) {
@@ -177,25 +180,13 @@ export function runSpinDraw(opts) {
     haptic.medium();
     playTone('lock');
 
-    rt.ballEl.classList.remove('dball--spin');
+    // The foreshadow aura (variant A) already played during the slow-down; now the
+    // number resolves and the win-colour flash takes over. Hand straight back —
+    // no post-reveal delay (that used to make the flare trail the number).
+    rt.ballEl.classList.remove('dball--spin', 'dball--foreshadow');
     rt.ballEl.textContent = drawn[rt.i]; // clears the reel, shows the real number
-
-    const resolveAndAdvance = () => {
-      if (stopped) return;
-      onBallResolved(rt.i);          // reveal.js applies match/near-miss visuals + tones
-      later(() => { cur = null; runBall(rt.i + 1); }, cfg.LOCK_HOLD_MS);
-    };
-
-    // Variant A "foreshadow": a winning ball throbs gold for FLARE_LEAD_MS
-    // BEFORE the win-colour reveals — a loud, distinct "tell" that pre-loads
-    // the dopamine. (Variant B and all misses resolve immediately.)
-    if (variant === 'A' && rt.isHit) {
-      rt.ballEl.style.setProperty('--flare-dur', cfg.FLARE_LEAD_MS + 'ms');
-      rt.ballEl.classList.add('is-flare');
-      later(resolveAndAdvance, cfg.FLARE_LEAD_MS);
-    } else {
-      resolveAndAdvance();
-    }
+    onBallResolved(rt.i);                // reveal.js applies match/near-miss visuals + tones
+    later(() => { cur = null; runBall(rt.i + 1); }, cfg.LOCK_HOLD_MS);
   }
 
   // ── Per-ball driver ──
@@ -209,13 +200,18 @@ export function runSpinDraw(opts) {
     cur = {
       i, ballEl, reel, landingPmod,
       isHit: numbers.includes(drawn[i]),
-      phase: 'spinup',
-      p: 0, vel: 0, kinetic: 0,
-      phaseStart: now(),
+      // Start FLYING, not from a standstill. A launch boost above cruise that
+      // decays to cruise — numbers fly past diversely from frame one. The old
+      // ease-in ramp crawled through ~1 cell for 250ms and hid all the variety.
+      phase: 'live',
+      p: 0,
+      vel: cfg.CRUISE_VELOCITY,
+      kinetic: cfg.CRUISE_VELOCITY, // launch energy above cruise; decays via KINETIC_DECAY
       last: now(),
       idleTimer: null,
       decelFrom: 0, decelTarget: 0, decelDur: 0, decelStart: 0,
     };
+    armIdle(cur); // start the do-nothing settle countdown immediately
   }
 
   // ── Single rAF loop drives whichever ball is `cur` ──
@@ -226,12 +222,7 @@ export function runSpinDraw(opts) {
     const dt = Math.min(48, t - cur.last);
     cur.last = t;
 
-    if (cur.phase === 'spinup') {
-      const prog = Math.min(1, (t - cur.phaseStart) / (cfg.SPIN_UP_MS * pace));
-      cur.vel = cfg.CRUISE_VELOCITY * easeIn(prog);
-      cur.p += cur.vel * dt;
-      if (prog >= 1) enterLive(cur);
-    } else if (cur.phase === 'live') {
+    if (cur.phase === 'live') {
       cur.kinetic *= Math.pow(cfg.KINETIC_DECAY, dt / 16.67);
       cur.vel = cfg.CRUISE_VELOCITY + cur.kinetic;
       if (!cfg.REVERSE_SPIN && cur.vel < cfg.CRUISE_VELOCITY * 0.15) cur.vel = cfg.CRUISE_VELOCITY * 0.15;
@@ -250,7 +241,7 @@ export function runSpinDraw(opts) {
   // locks the ball on release. (No long-press — the thumb covers the ball.)
   let pid = null, downX = 0, downY = 0, lastX = 0, didSwipe = false;
 
-  const isGrabbable = () => cur && (cur.phase === 'spinup' || cur.phase === 'live');
+  const isGrabbable = () => cur && cur.phase === 'live';
 
   function onDown(e) {
     if (!isGrabbable() || pid !== null) return;
@@ -267,7 +258,6 @@ export function runSpinDraw(opts) {
     const totX = e.clientX - downX, totY = e.clientY - downY;
     if (Math.abs(totX) > cfg.SWIPE_DX_MIN && Math.abs(totX) > Math.abs(totY)) {
       didSwipe = true;
-      enterLive(cur);
       let contrib = dx * cfg.SWIPE_GAIN;
       if (!cfg.REVERSE_SPIN && contrib < 0) contrib = 0; // only rightward stokes
       const lo = cfg.REVERSE_SPIN ? -cfg.MAX_KINETIC : 0;
@@ -289,7 +279,9 @@ export function runSpinDraw(opts) {
 
   function onCancel(e) {
     if (e.pointerId !== pid) return;
+    try { drawAreaEl.releasePointerCapture(pid); } catch (_) {}
     pid = null;
+    // A cancel is not a deliberate tap, so we do NOT lock; the idle timer settles the ball.
   }
 
   drawAreaEl.style.touchAction = 'none';

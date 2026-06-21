@@ -77,7 +77,8 @@ export function initReveal() {
   const progressEl = el.querySelector('#reveal-progress');
 
   let _animating = false;
-  let _spinStop = null; // active-play teardown handle (null in classic mode)
+  let _spinStop = null;    // active-play teardown handle (null in classic mode)
+  let _finaleTimer = null; // pending doResult timer; cleared on exit so it can't fire post-teardown
 
   registerScreen({
     id: 'reveal',
@@ -312,6 +313,7 @@ export function initReveal() {
 
         // Tear down the spin engine (rAF loop + listeners) now the draw is done.
         if (_spinStop) { _spinStop(); _spinStop = null; }
+        _finaleTimer = null;
         _animating = false;
         goto('result', {
           score,
@@ -333,7 +335,7 @@ export function initReveal() {
           variant: CONFIG.ACTIVE_PLAY_LANDING_VARIANT,
           onAllResolved() {
             doFinalePause();
-            setTimeout(doResult, Math.round(CONFIG.ACTIVE_PLAY.PAUSE_TO_RESULT_MS * pace));
+            _finaleTimer = setTimeout(doResult, Math.round(CONFIG.ACTIVE_PLAY.PAUSE_TO_RESULT_MS * pace));
           },
         });
       } else {
@@ -358,6 +360,7 @@ export function initReveal() {
     onExit() {
       // Tear down the active-play spin (rAF, timers, pointer capture, listeners).
       if (_spinStop) { _spinStop(); _spinStop = null; }
+      if (_finaleTimer) { clearTimeout(_finaleTimer); _finaleTimer = null; }
       _animating = false;
     },
   });
