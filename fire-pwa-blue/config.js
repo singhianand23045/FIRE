@@ -45,6 +45,7 @@ export const CONFIG = {
     IDLE_SETTLE_MS: 2000,   // auto-settle after this much NO interaction (× pace); resets on every touch
     SETTLE_MS: 850,         // do-nothing decel duration (× pace) — gradual roulette wind-down
     HARD_LOCK_MS: 400,      // press-to-lock decel — quadratic, long enough to read as a roll-to-stop
+    DECEL_CELLS: 4,         // reel rolls this many cells during decel (fixed → slow enough to never alias)
     LOCK_HOLD_MS: 200,      // beat between a ball locking and the next ball spinning
     SWIPE_DX_MIN: 18,       // horizontal px before a swipe registers
     SWIPE_GAIN: 0.010,      // px/ms velocity added per px swiped

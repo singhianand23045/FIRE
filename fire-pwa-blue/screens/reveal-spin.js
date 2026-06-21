@@ -78,15 +78,13 @@ export function runSpinDraw(opts) {
     return stop;
   }
 
-  // ── Build a seeded reel inside a ball ──
+  // ── Build a diverse spinning reel inside a ball ──
   function buildReel(i, ballEl) {
-    const drawnNum = drawn[i];
     const len = cfg.CYCLE_LEN;
-    const landingIndex = Math.floor(len / 2);
 
     // Diverse strip: a shuffled run of DISTINCT pool numbers so EVERY number
-    // appears — kills the "same few keep repeating" feel. With CYCLE_LEN === pool
-    // size the strip is a full permutation of 1..POOL.
+    // appears. The drawn number and the near-miss whoosh are written into the
+    // landing slots at decel time (see startDecel); the live spin is pure variety.
     const pool = [];
     for (let n = 1; n <= CONFIG.DRAW_POOL_SIZE; n++) pool.push(n);
     for (let k = pool.length - 1; k > 0; k--) {
@@ -96,40 +94,31 @@ export function runSpinDraw(opts) {
     const seq = new Array(len);
     for (let k = 0; k < len; k++) seq[k] = pool[k % pool.length];
 
-    // Centre the predetermined number on the landing (swap keeps the strip distinct).
-    const di = seq.indexOf(drawnNum);
-    if (di === -1) seq[landingIndex] = drawnNum;
-    else if (di !== landingIndex) { const t = seq[di]; seq[di] = seq[landingIndex]; seq[landingIndex] = t; }
-
-    // Whoosh one of the player's OWN numbers past right before the landing —
-    // a manufactured near-miss every ball, and it makes "their" numbers show up.
-    const seedIdx = (landingIndex + 1) % len;
-    const held = numbers.filter((n) => n !== drawnNum);
-    if (held.length && seedIdx !== landingIndex) {
-      const p = held[Math.floor(Math.random() * held.length)];
-      const pi = seq.indexOf(p);
-      if (pi === -1) seq[seedIdx] = p;
-      else if (pi !== landingIndex && pi !== seedIdx) { const t = seq[pi]; seq[pi] = seq[seedIdx]; seq[seedIdx] = t; }
-    }
-
     ballEl.classList.add('dball-active', 'dball--spin');
     ballEl.textContent = '';
     const reel = document.createElement('div');
     reel.className = 'dball__reel';
-    // Two copies → seamless wrap.
+    // Two copies → seamless wrap. cells[k] and cells[k+len] are the same slot.
+    const cells = [];
     for (let copy = 0; copy < 2; copy++) {
       for (let k = 0; k < len; k++) {
         const cell = document.createElement('div');
         cell.className = 'dball__cell';
         cell.textContent = seq[k];
         reel.appendChild(cell);
+        cells.push(cell);
       }
     }
     ballEl.appendChild(reel);
+    return { reel, cells };
+  }
 
-    // p ≡ landingPmod (mod cycleW) centers seq[landingIndex] in the viewport.
-    const landingPmod = ((len - landingIndex) % len) * BALL_W;
-    return { reel, landingPmod };
+  // Write a value into reel slot `idx` (both copies) so it shows under the ball.
+  function setCell(rt, idx, value) {
+    const a = rt.cells[idx];
+    const b = rt.cells[idx + cfg.CYCLE_LEN];
+    if (a) a.textContent = value;
+    if (b) b.textContent = value;
   }
 
   function paint(reel, p, vel) {
@@ -143,22 +132,37 @@ export function runSpinDraw(opts) {
   function armIdle(rt) {
     clearTimer(rt.idleTimer);
     rt.idleTimer = later(() => {
-      if (cur === rt && rt.phase === 'live') startDecel(rt, cfg.SETTLE_MS * pace, BALL_W * 1.5);
+      if (cur === rt && rt.phase === 'live') startDecel(rt, cfg.SETTLE_MS * pace);
     }, cfg.IDLE_SETTLE_MS * pace);
   }
 
-  // ── Decelerate to land EXACTLY on the predetermined number ──
-  function startDecel(rt, durMs, minSpin) {
+  // ── Decelerate: roll a SHORT FIXED distance and land the drawn number under
+  //    the ball. Fixed (not "next position congruent to a preset landing", which
+  //    could be a whole cycle away) so the reel never moves fast enough to alias
+  //    or appear to reverse near the stop. ──
+  function startDecel(rt, durMs) {
     if (rt.phase === 'decel' || rt.phase === 'locked') return;
     clearTimer(rt.idleTimer);
     rt.ballEl.classList.remove('is-stoked');
     rt.phase = 'decel';
-    // Smallest forward p ≥ current (+minSpin) that is congruent to landingPmod.
-    let target = rt.p - (((rt.p - rt.landingPmod) % cycleW) + cycleW) % cycleW;
-    const floor = rt.p + (minSpin || 0);
-    while (target < floor) target += cycleW;
+
+    const len = cfg.CYCLE_LEN;
+    // Land a few cells ahead, snapped to a whole cell so one sits centred.
+    const targetP = Math.round((rt.p + cfg.DECEL_CELLS * BALL_W) / BALL_W) * BALL_W;
+    const k = (((targetP / BALL_W) % len) + len) % len;
+    const centerIdx = ((len - k) % len + len) % len; // slot centred at targetP
+    const beforeIdx = (centerIdx + 1) % len;          // scrolls past just before landing
+
+    // Write the drawn number onto the landing slot, and one of the player's own
+    // numbers right before it (the near-miss whoosh). Both are several cells
+    // ahead and off-screen, so the swap is invisible.
+    setCell(rt, centerIdx, drawn[rt.i]);
+    const held = numbers.filter((n) => n !== drawn[rt.i]);
+    if (held.length) setCell(rt, beforeIdx, held[Math.floor(Math.random() * held.length)]);
+
+    rt.landingPmod = ((targetP % cycleW) + cycleW) % cycleW;
     rt.decelFrom = rt.p;
-    rt.decelTarget = target;
+    rt.decelTarget = targetP;
     rt.decelDur = Math.max(60, durMs);
     rt.decelStart = now();
 
@@ -196,19 +200,20 @@ export function runSpinDraw(opts) {
     const ballEl = getBall(i);
     if (!ballEl) { runBall(i + 1); return; }
 
-    const { reel, landingPmod } = buildReel(i, ballEl);
+    const { reel, cells } = buildReel(i, ballEl);
     cur = {
-      i, ballEl, reel, landingPmod,
+      i, ballEl, reel, cells,
       isHit: numbers.includes(drawn[i]),
-      // Start FLYING, not from a standstill. A launch boost above cruise that
-      // decays to cruise — numbers fly past diversely from frame one. The old
-      // ease-in ramp crawled through ~1 cell for 250ms and hid all the variety.
+      // Start at a gentle, constant cruise. No launch boost — that read as
+      // "hyper speed" and pushed the reel into the aliasing zone (wagon-wheel
+      // reversal). Diversity still shows from frame one: there's no ease-in ramp.
       phase: 'live',
       p: 0,
       vel: cfg.CRUISE_VELOCITY,
-      kinetic: cfg.CRUISE_VELOCITY, // launch energy above cruise; decays via KINETIC_DECAY
+      kinetic: 0,
       last: now(),
       idleTimer: null,
+      landingPmod: 0,
       decelFrom: 0, decelTarget: 0, decelDur: 0, decelStart: 0,
     };
     armIdle(cur); // start the do-nothing settle countdown immediately
@@ -273,7 +278,7 @@ export function runSpinDraw(opts) {
     pid = null;
     if (!cur) return;
     // Any press that wasn't a swipe = "grab it" → lock on release.
-    if (!didSwipe) startDecel(cur, cfg.HARD_LOCK_MS, BALL_W);
+    if (!didSwipe) startDecel(cur, cfg.HARD_LOCK_MS);
     // else: a swipe ended — let it ride; the idle timer settles it.
   }
 
