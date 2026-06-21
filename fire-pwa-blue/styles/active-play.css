@@ -48,11 +48,6 @@
   transition: box-shadow 0.15s ease, filter 0.15s ease;
 }
 
-/* Long-press freeze — held stationary. */
-.num-ball--draw.dball--frozen {
-  box-shadow: 0 0 18px rgba(255, 255, 255, 0.45);
-}
-
 /* ── Lock reveal: suppress the classic top-drop (the ball is already
       on screen), keep only the match flash / near-miss wobble. ──
       Higher specificity (3 classes) + later load → overrides only the

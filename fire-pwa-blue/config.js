@@ -44,15 +44,11 @@ export const CONFIG = {
     ENABLED: true,
     SPIN_UP_MS: 250,        // ramp 0→cruise (× pace)
     IDLE_SETTLE_MS: 2000,   // auto-settle after this much NO interaction (× pace); resets on every touch
-    SETTLE_MS: 850,         // do-nothing / release decel duration (× pace) — gradual roulette wind-down
-    HARD_LOCK_MS: 200,      // tap decel — snappy but soft-tailed (quintic), not a brick wall
+    SETTLE_MS: 850,         // do-nothing decel duration (× pace) — gradual roulette wind-down
+    HARD_LOCK_MS: 200,      // press-to-lock decel — snappy but soft-tailed (quintic), not a brick wall
     LOCK_HOLD_MS: 200,      // beat between a ball locking and the next ball spinning
     FLARE_LEAD_MS: 300,     // variant A: gold "tell" pulse duration before the win-colour reveal
-    LONGPRESS_MS: 350,      // hold (little movement) this long → freeze; no max-hold cap
-    TAP_MAX_MS: 200,        // pointerup within this = tap
-    TAP_MOVE_MAX: 12,       // px movement budget for a tap
     SWIPE_DX_MIN: 18,       // horizontal px before a swipe registers
-    MOVE_TOLERANCE: 10,     // px before long-press is cancelled
     SWIPE_GAIN: 0.010,      // px/ms velocity added per px swiped
     MAX_KINETIC: 3.0,       // px/ms momentum cap above cruise
     KINETIC_DECAY: 0.94,    // per-16ms-frame momentum decay toward cruise

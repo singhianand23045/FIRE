@@ -3,10 +3,10 @@
 //
 // During the draw, each drawn ball becomes a horizontally-spinning
 // roulette ball. The player can:
-//   • Tap         → hard lock (150ms, no floor), reveal now
+//   • Tap / press → lock it and reveal (any touch that isn't a swipe)
 //   • Swipe L→R   → stoke it faster (kinetic, decays); no ceiling
-//   • Long-press  → freeze it; release reveals; no max-hold
 //   • Do nothing  → auto-settles after IDLE_SETTLE_MS of quiet
+// (Long-press freeze was removed — on a phone the thumb covers the ball.)
 //
 // REGULATORY INVARIANT: the number under each ball is decided up front
 // (drawn[i]). Every gesture is cosmetic — like a video-slot stop button.
@@ -142,7 +142,7 @@ export function runSpinDraw(opts) {
   function armIdle(rt) {
     clearTimer(rt.idleTimer);
     rt.idleTimer = later(() => {
-      if (cur === rt && rt.phase === 'live' && !rt.frozen) startDecel(rt, cfg.SETTLE_MS * pace, BALL_W * 1.5);
+      if (cur === rt && rt.phase === 'live') startDecel(rt, cfg.SETTLE_MS * pace, BALL_W * 1.5);
     }, cfg.IDLE_SETTLE_MS * pace);
   }
 
@@ -177,7 +177,7 @@ export function runSpinDraw(opts) {
     haptic.medium();
     playTone('lock');
 
-    rt.ballEl.classList.remove('dball--spin', 'dball--frozen');
+    rt.ballEl.classList.remove('dball--spin');
     rt.ballEl.textContent = drawn[rt.i]; // clears the reel, shows the real number
 
     const resolveAndAdvance = () => {
@@ -213,7 +213,6 @@ export function runSpinDraw(opts) {
       p: 0, vel: 0, kinetic: 0,
       phaseStart: now(),
       last: now(),
-      frozen: false,
       idleTimer: null,
       decelFrom: 0, decelTarget: 0, decelDur: 0, decelStart: 0,
     };
@@ -233,14 +232,10 @@ export function runSpinDraw(opts) {
       cur.p += cur.vel * dt;
       if (prog >= 1) enterLive(cur);
     } else if (cur.phase === 'live') {
-      if (cur.frozen) {
-        cur.vel = 0; // held stationary
-      } else {
-        cur.kinetic *= Math.pow(cfg.KINETIC_DECAY, dt / 16.67);
-        cur.vel = cfg.CRUISE_VELOCITY + cur.kinetic;
-        if (!cfg.REVERSE_SPIN && cur.vel < cfg.CRUISE_VELOCITY * 0.15) cur.vel = cfg.CRUISE_VELOCITY * 0.15;
-        cur.p += cur.vel * dt;
-      }
+      cur.kinetic *= Math.pow(cfg.KINETIC_DECAY, dt / 16.67);
+      cur.vel = cfg.CRUISE_VELOCITY + cur.kinetic;
+      if (!cfg.REVERSE_SPIN && cur.vel < cfg.CRUISE_VELOCITY * 0.15) cur.vel = cfg.CRUISE_VELOCITY * 0.15;
+      cur.p += cur.vel * dt;
     } else if (cur.phase === 'decel') {
       const prog = Math.min(1, (t - cur.decelStart) / cur.decelDur);
       cur.p = cur.decelFrom + (cur.decelTarget - cur.decelFrom) * easeOut(prog);
@@ -251,27 +246,18 @@ export function runSpinDraw(opts) {
   }
 
   // ── Gesture layer (attached once; acts on `cur`) ──
-  let pid = null, downX = 0, downY = 0, downT = 0, lastX = 0, moved = 0, didSwipe = false, lpTimer = null;
+  // Two gestures: a horizontal swipe stokes the spin faster; any other press
+  // locks the ball on release. (No long-press — the thumb covers the ball.)
+  let pid = null, downX = 0, downY = 0, lastX = 0, didSwipe = false;
 
   const isGrabbable = () => cur && (cur.phase === 'spinup' || cur.phase === 'live');
-
-  function cancelLP() { clearTimer(lpTimer); lpTimer = null; }
 
   function onDown(e) {
     if (!isGrabbable() || pid !== null) return;
     pid = e.pointerId;
-    downX = lastX = e.clientX; downY = e.clientY; downT = now();
-    moved = 0; didSwipe = false;
+    downX = lastX = e.clientX; downY = e.clientY;
+    didSwipe = false;
     try { drawAreaEl.setPointerCapture(pid); } catch (_) {}
-    lpTimer = later(() => {
-      // Long-press → freeze (no max-hold cap; held until release).
-      if (cur && isGrabbable() && moved < cfg.MOVE_TOLERANCE) {
-        enterLive(cur);
-        cur.frozen = true;
-        clearTimer(cur.idleTimer);
-        cur.ballEl.classList.add('dball--frozen');
-      }
-    }, cfg.LONGPRESS_MS);
   }
 
   function onMove(e) {
@@ -279,10 +265,7 @@ export function runSpinDraw(opts) {
     const dx = e.clientX - lastX;
     lastX = e.clientX;
     const totX = e.clientX - downX, totY = e.clientY - downY;
-    moved = Math.max(moved, Math.hypot(totX, totY));
-    if (cur.frozen) return; // holding — ignore swipes
     if (Math.abs(totX) > cfg.SWIPE_DX_MIN && Math.abs(totX) > Math.abs(totY)) {
-      cancelLP();
       didSwipe = true;
       enterLive(cur);
       let contrib = dx * cfg.SWIPE_GAIN;
@@ -296,30 +279,17 @@ export function runSpinDraw(opts) {
 
   function onUp(e) {
     if (e.pointerId !== pid) return;
-    cancelLP();
     try { drawAreaEl.releasePointerCapture(pid); } catch (_) {}
-    const heldMs = now() - downT;
     pid = null;
     if (!cur) return;
-    if (cur.frozen) {
-      cur.frozen = false;
-      cur.ballEl.classList.remove('dball--frozen');
-      startDecel(cur, cfg.SETTLE_MS * pace, 0);
-    } else if (!didSwipe && heldMs <= cfg.TAP_MAX_MS && moved <= cfg.TAP_MOVE_MAX) {
-      startDecel(cur, cfg.HARD_LOCK_MS, BALL_W); // snap, but always glide ≥1 cell so it never instant-stops
-    }
+    // Any press that wasn't a swipe = "grab it" → lock on release.
+    if (!didSwipe) startDecel(cur, cfg.HARD_LOCK_MS, BALL_W);
     // else: a swipe ended — let it ride; the idle timer settles it.
   }
 
   function onCancel(e) {
     if (e.pointerId !== pid) return;
-    cancelLP();
     pid = null;
-    if (cur && cur.frozen) {
-      cur.frozen = false;
-      cur.ballEl.classList.remove('dball--frozen');
-      startDecel(cur, cfg.SETTLE_MS * pace, 0);
-    }
   }
 
   drawAreaEl.style.touchAction = 'none';
