@@ -39,7 +39,7 @@ export const CONFIG = {
   // loop (fully preserved as the `else` branch in screens/reveal.js).
   // To remove entirely: set ENABLED=false (kill), or delete
   // screens/reveal-spin.js + styles/active-play.css and the branch.
-  ACTIVE_PLAY_LANDING_VARIANT: 'B',  // 'A' foreshadow win | 'B' identical-until-legible
+  ACTIVE_PLAY_LANDING_VARIANT: 'A',  // 'A' foreshadow win | 'B' identical-until-legible
   ACTIVE_PLAY: {
     ENABLED: true,
     SPIN_UP_MS: 250,        // ramp 0→cruise (× pace)
