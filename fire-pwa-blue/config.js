@@ -44,9 +44,10 @@ export const CONFIG = {
     ENABLED: true,
     SPIN_UP_MS: 250,        // ramp 0→cruise (× pace)
     IDLE_SETTLE_MS: 2000,   // auto-settle after this much NO interaction (× pace); resets on every touch
-    SETTLE_MS: 400,         // do-nothing / release decel duration (× pace)
-    HARD_LOCK_MS: 150,      // tap decel — NO floor
+    SETTLE_MS: 850,         // do-nothing / release decel duration (× pace) — gradual roulette wind-down
+    HARD_LOCK_MS: 200,      // tap decel — snappy but soft-tailed (quintic), not a brick wall
     LOCK_HOLD_MS: 200,      // beat between a ball locking and the next ball spinning
+    FLARE_LEAD_MS: 300,     // variant A: gold "tell" pulse duration before the win-colour reveal
     LONGPRESS_MS: 350,      // hold (little movement) this long → freeze; no max-hold cap
     TAP_MAX_MS: 200,        // pointerup within this = tap
     TAP_MOVE_MAX: 12,       // px movement budget for a tap
@@ -58,7 +59,7 @@ export const CONFIG = {
     CRUISE_VELOCITY: 0.55,  // px/ms baseline spin (legible blur)
     MAX_BLUR: 3.5,          // px, legible-blur cap
     BLUR_K: 2.2,            // blur px per (px/ms) of velocity
-    CYCLE_LEN: 16,          // numerals per reel cycle
+    CYCLE_LEN: 27,          // numerals per reel cycle (= pool size → every number shows, max diversity)
     PAUSE_TO_RESULT_MS: 1500,
     REVERSE_SPIN: false,    // optional flourish: left-swipe slows then reverses (default off)
   },

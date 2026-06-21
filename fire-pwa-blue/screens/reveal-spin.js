@@ -27,7 +27,9 @@ const BALL_W = 52; // .num-ball--lg width in px (keep in sync with components.cs
 
 const now = () => performance.now();
 const easeIn = (t) => t * t;
-const easeOut = (t) => 1 - Math.pow(1 - t, 3);
+// Quintic ease-out: fast early, long gentle tail so the ball glides to a stop
+// (velocity → 0 smoothly) instead of halting abruptly.
+const easeOut = (t) => 1 - Math.pow(1 - t, 5);
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
 // ─────────────────────────────────────────────────────────────
@@ -78,17 +80,36 @@ export function runSpinDraw(opts) {
   // ── Build a seeded reel inside a ball ──
   function buildReel(i, ballEl) {
     const drawnNum = drawn[i];
-    const landingIndex = Math.floor(cfg.CYCLE_LEN / 2);
-    const seq = new Array(cfg.CYCLE_LEN);
-    for (let k = 0; k < cfg.CYCLE_LEN; k++) {
-      seq[k] = 1 + Math.floor(Math.random() * CONFIG.DRAW_POOL_SIZE);
+    const len = cfg.CYCLE_LEN;
+    const landingIndex = Math.floor(len / 2);
+
+    // Diverse strip: a shuffled run of DISTINCT pool numbers so EVERY number
+    // appears — kills the "same few keep repeating" feel. With CYCLE_LEN === pool
+    // size the strip is a full permutation of 1..POOL.
+    const pool = [];
+    for (let n = 1; n <= CONFIG.DRAW_POOL_SIZE; n++) pool.push(n);
+    for (let k = pool.length - 1; k > 0; k--) {
+      const j = Math.floor(Math.random() * (k + 1));
+      const t = pool[k]; pool[k] = pool[j]; pool[j] = t;
     }
-    seq[landingIndex] = drawnNum;
-    // Seed one of the player's OWN numbers in the cell that whooshes past
-    // immediately before the landing (manufactured near-miss every ball).
-    const seedIdx = (landingIndex + 1) % cfg.CYCLE_LEN;
+    const seq = new Array(len);
+    for (let k = 0; k < len; k++) seq[k] = pool[k % pool.length];
+
+    // Centre the predetermined number on the landing (swap keeps the strip distinct).
+    const di = seq.indexOf(drawnNum);
+    if (di === -1) seq[landingIndex] = drawnNum;
+    else if (di !== landingIndex) { const t = seq[di]; seq[di] = seq[landingIndex]; seq[landingIndex] = t; }
+
+    // Whoosh one of the player's OWN numbers past right before the landing —
+    // a manufactured near-miss every ball, and it makes "their" numbers show up.
+    const seedIdx = (landingIndex + 1) % len;
     const held = numbers.filter((n) => n !== drawnNum);
-    if (held.length) seq[seedIdx] = held[Math.floor(Math.random() * held.length)];
+    if (held.length && seedIdx !== landingIndex) {
+      const p = held[Math.floor(Math.random() * held.length)];
+      const pi = seq.indexOf(p);
+      if (pi === -1) seq[seedIdx] = p;
+      else if (pi !== landingIndex && pi !== seedIdx) { const t = seq[pi]; seq[pi] = seq[seedIdx]; seq[seedIdx] = t; }
+    }
 
     ballEl.classList.add('dball-active', 'dball--spin');
     ballEl.textContent = '';
@@ -96,7 +117,7 @@ export function runSpinDraw(opts) {
     reel.className = 'dball__reel';
     // Two copies → seamless wrap.
     for (let copy = 0; copy < 2; copy++) {
-      for (let k = 0; k < cfg.CYCLE_LEN; k++) {
+      for (let k = 0; k < len; k++) {
         const cell = document.createElement('div');
         cell.className = 'dball__cell';
         cell.textContent = seq[k];
@@ -106,7 +127,7 @@ export function runSpinDraw(opts) {
     ballEl.appendChild(reel);
 
     // p ≡ landingPmod (mod cycleW) centers seq[landingIndex] in the viewport.
-    const landingPmod = ((cfg.CYCLE_LEN - landingIndex) % cfg.CYCLE_LEN) * BALL_W;
+    const landingPmod = ((len - landingIndex) % len) * BALL_W;
     return { reel, landingPmod };
   }
 
@@ -165,10 +186,13 @@ export function runSpinDraw(opts) {
       later(() => { cur = null; runBall(rt.i + 1); }, cfg.LOCK_HOLD_MS);
     };
 
-    // Variant A "foreshadow": a winning ball flares ~80ms before it reads.
+    // Variant A "foreshadow": a winning ball throbs gold for FLARE_LEAD_MS
+    // BEFORE the win-colour reveals — a loud, distinct "tell" that pre-loads
+    // the dopamine. (Variant B and all misses resolve immediately.)
     if (variant === 'A' && rt.isHit) {
+      rt.ballEl.style.setProperty('--flare-dur', cfg.FLARE_LEAD_MS + 'ms');
       rt.ballEl.classList.add('is-flare');
-      later(resolveAndAdvance, 80);
+      later(resolveAndAdvance, cfg.FLARE_LEAD_MS);
     } else {
       resolveAndAdvance();
     }
@@ -282,7 +306,7 @@ export function runSpinDraw(opts) {
       cur.ballEl.classList.remove('dball--frozen');
       startDecel(cur, cfg.SETTLE_MS * pace, 0);
     } else if (!didSwipe && heldMs <= cfg.TAP_MAX_MS && moved <= cfg.TAP_MOVE_MAX) {
-      startDecel(cur, cfg.HARD_LOCK_MS, 0); // hard lock, no floor
+      startDecel(cur, cfg.HARD_LOCK_MS, BALL_W); // snap, but always glide ≥1 cell so it never instant-stops
     }
     // else: a swipe ended — let it ride; the idle timer settles it.
   }
