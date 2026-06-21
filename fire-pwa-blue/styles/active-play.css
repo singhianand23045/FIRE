@@ -1,0 +1,82 @@
+/* ─────────────────────────────────────────────────────────────
+   FIRE PWA — Active Play (spin-the-ball draw interaction)
+
+   Loaded AFTER components.css so the `.dball-active` overrides win.
+   REVERSIBILITY: delete this file + its <link> in index.html to remove
+   all spin styling. Behaviour is gated separately by CONFIG.ACTIVE_PLAY.
+   ───────────────────────────────────────────────────────────── */
+
+/* A draw ball that is (or has been) spinning. Visible + in place
+   (the classic ball is opacity:0/translateY until it "drops"). */
+.num-ball--draw.dball-active {
+  opacity: 1;
+  transform: none;
+}
+
+/* While spinning: clip the reel to the circle. */
+.num-ball--draw.dball--spin {
+  overflow: hidden;
+  position: relative;
+}
+
+/* The horizontal numeral strip (translated on X by JS). */
+.dball__reel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  display: flex;
+  will-change: transform, filter;
+  pointer-events: none;
+}
+
+.dball__cell {
+  flex: 0 0 52px; /* = .num-ball--lg width */
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-serif);
+  font-size: 21px;
+  color: var(--plat);
+}
+
+/* Swipe "stoke/heat" — implies influence with no copy claim. */
+.num-ball--draw.is-stoked {
+  box-shadow: 0 0 26px rgba(255, 170, 60, 0.55), 0 0 52px rgba(255, 120, 20, 0.28);
+  filter: brightness(1.15);
+  transition: box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+/* Long-press freeze — held stationary. */
+.num-ball--draw.dball--frozen {
+  box-shadow: 0 0 18px rgba(255, 255, 255, 0.45);
+}
+
+/* ── Lock reveal: suppress the classic top-drop (the ball is already
+      on screen), keep only the match flash / near-miss wobble. ──
+      Higher specificity (3 classes) + later load → overrides only the
+      `animation` property; colour/glow from components.css still apply. */
+.num-ball--draw.dball-active.is-dropped {
+  animation: none;
+}
+.num-ball--draw.dball-active.is-hit,
+.num-ball--draw.dball-active.is-hit-d1,
+.num-ball--draw.dball-active.is-hit-d2,
+.num-ball--draw.dball-active.is-hit-d3 {
+  animation: ballMatch 0.6s var(--ease-spring) both;
+}
+.num-ball--draw.dball-active.is-near-miss {
+  animation: ballNearMiss 0.6s ease both;
+}
+
+/* Variant A "foreshadow": a winning ball flares just before it reads. */
+.num-ball--draw.is-flare {
+  animation: ballFlare 0.25s ease-out both;
+}
+
+@keyframes ballFlare {
+  0%   { box-shadow: 0 0 0 rgba(255, 255, 255, 0); transform: scale(1); }
+  50%  { box-shadow: 0 0 44px rgba(255, 255, 255, 0.9); transform: scale(1.12); }
+  100% { box-shadow: 0 0 24px rgba(255, 255, 255, 0.3); transform: scale(1); }
+}

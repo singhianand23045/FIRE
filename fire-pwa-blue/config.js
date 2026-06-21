@@ -32,6 +32,37 @@ export const CONFIG = {
   // Boosted match probability targets (chance of 3+ matches)
   BOOST_ODDS: [0.90, 0.70, 0.50],  // draw 1, 2, 3
 
+  // ── Active Play (spin-the-ball draw interaction) ──────────
+  // Cosmetic illusion-of-control over the draw. The number is ALWAYS
+  // predetermined (boostedDraw/adaptiveDraw); gestures never change it.
+  // REVERSIBILITY: ACTIVE_PLAY.ENABLED=false restores the classic drop
+  // loop (fully preserved as the `else` branch in screens/reveal.js).
+  // To remove entirely: set ENABLED=false (kill), or delete
+  // screens/reveal-spin.js + styles/active-play.css and the branch.
+  ACTIVE_PLAY_LANDING_VARIANT: 'A',  // 'A' foreshadow win | 'B' identical-until-legible
+  ACTIVE_PLAY: {
+    ENABLED: true,
+    SPIN_UP_MS: 250,        // ramp 0→cruise (× pace)
+    IDLE_SETTLE_MS: 2000,   // auto-settle after this much NO interaction (× pace); resets on every touch
+    SETTLE_MS: 400,         // do-nothing / release decel duration (× pace)
+    HARD_LOCK_MS: 150,      // tap decel — NO floor
+    LOCK_HOLD_MS: 200,      // beat between a ball locking and the next ball spinning
+    LONGPRESS_MS: 350,      // hold (little movement) this long → freeze; no max-hold cap
+    TAP_MAX_MS: 200,        // pointerup within this = tap
+    TAP_MOVE_MAX: 12,       // px movement budget for a tap
+    SWIPE_DX_MIN: 18,       // horizontal px before a swipe registers
+    MOVE_TOLERANCE: 10,     // px before long-press is cancelled
+    SWIPE_GAIN: 0.010,      // px/ms velocity added per px swiped
+    MAX_KINETIC: 3.0,       // px/ms momentum cap above cruise
+    KINETIC_DECAY: 0.94,    // per-16ms-frame momentum decay toward cruise
+    CRUISE_VELOCITY: 0.55,  // px/ms baseline spin (legible blur)
+    MAX_BLUR: 3.5,          // px, legible-blur cap
+    BLUR_K: 2.2,            // blur px per (px/ms) of velocity
+    CYCLE_LEN: 16,          // numerals per reel cycle
+    PAUSE_TO_RESULT_MS: 1500,
+    REVERSE_SPIN: false,    // optional flourish: left-swipe slows then reverses (default off)
+  },
+
   // ── Economy ────────────────────────────────────────────────
   STARTING_ENTRIES: 100,          // granted whenever entries hit 0
   ENTRIES_PER_DRAW: 10,           // cost per draw

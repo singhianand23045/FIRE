@@ -48,6 +48,7 @@ const bundledPrecache = `const PRECACHE_ASSETS = [
   '/styles/animations.css',
   '/styles/screens.css',
   '/styles/components.css',
+  '/styles/active-play.css',
 
   // Fonts
   '/assets/fonts/CormorantGaramond-Light.woff2',

@@ -25,6 +25,7 @@ import { CONFIG } from '../config.js';
 import { getDevForceMatches, _constructForcedDraw } from './devmode.js';
 import { evt_drawResult } from '../core/analytics.js';
 import { getOracleText, getOracleParams, callOracle } from '../engine/oracle-llm.js';
+import { runSpinDraw } from './reveal-spin.js';
 
 // ── Non-repeating random picker ──────────────────────────────
 const _usedIndices = {};
@@ -76,6 +77,7 @@ export function initReveal() {
   const progressEl = el.querySelector('#reveal-progress');
 
   let _animating = false;
+  let _spinStop = null; // active-play teardown handle (null in classic mode)
 
   registerScreen({
     id: 'reveal',
@@ -214,11 +216,6 @@ export function initReveal() {
       const pace = computeDrawPace(state.pendingNumberChanges || 0, state.preDrawDwellMs || 0);
       if (CONFIG.DEBUG) console.log(`[FIRE][Adapt] Draw pace: ${pace.toFixed(2)}x (${state.pendingNumberChanges || 0} changes, ${Math.round((state.preDrawDwellMs || 0) / 1000)}s dwell)`);
 
-      // ── Animate balls dropping ────────────────────────
-      // Gaps between drops escalate for suspense but cap at 4s — 5s/6s tails
-      // were losing attention in playtest observations.
-      const BASE_DROP_TIMES = [1500, 4000, 7200, 11200, 15200, 19200];
-      const dropTimes = BASE_DROP_TIMES.map(t => Math.round(t * pace));
       let matchCountSoFar = 0;
 
       const MATCH_WHISPER_POOLS = [
@@ -230,77 +227,77 @@ export function initReveal() {
         pickAdaptivePool(WHISPERS_MATCH_5, WHISPERS_MATCH_5_PASSIVE, WHISPERS_MATCH_5_ACTIVE),
       ];
 
-      drawn.forEach((drawnNum, i) => {
-        setTimeout(() => {
-          const ballEl = document.getElementById(`dball-${i}`);
-          if (!ballEl) return;
+      // ── Per-ball reveal ───────────────────────────────
+      // Applies match/near-miss visuals, haptics, tones, whispers for ball i.
+      // Shared verbatim by the classic drop loop AND the active-play spin path
+      // (in active play the ball is already on screen, so styles/active-play.css
+      // suppresses the drop-in translateY and keeps only the flash/wobble).
+      function revealBall(i) {
+        const drawnNum = drawn[i];
+        const ballEl = document.getElementById(`dball-${i}`);
+        if (!ballEl) return;
 
-          const isHit = numbers.includes(drawnNum);
-          const nmData = nearMiss.nearMisses.find(nm => nm.drawnNumber === drawnNum && !isHit);
+        const isHit = numbers.includes(drawnNum);
+        const nmData = nearMiss.nearMisses.find(nm => nm.drawnNumber === drawnNum && !isHit);
 
-          ballEl.classList.remove('num-ball--draw');
+        ballEl.classList.remove('num-ball--draw');
 
-          if (isHit) {
-            ballEl.classList.add('num-ball--draw', 'is-dropped', `is-hit-d${gameDrawIdx}`);
-            matchCountSoFar++;
+        if (isHit) {
+          ballEl.classList.add('num-ball--draw', 'is-dropped', `is-hit-d${gameDrawIdx}`);
+          matchCountSoFar++;
 
-            const pNum = document.getElementById(`pnum-${drawnNum}`);
-            if (pNum) setTimeout(() => {
-              pNum.classList.remove('is-static');
-              pNum.classList.add(`is-matched-d${gameDrawIdx}`);
-            }, 200);
+          const pNum = document.getElementById(`pnum-${drawnNum}`);
+          if (pNum) setTimeout(() => {
+            pNum.classList.remove('is-static');
+            pNum.classList.add(`is-matched-d${gameDrawIdx}`);
+          }, 200);
 
-            haptic.success();
-            playTone('match', matchCountSoFar); // pitch rises with each match
+          haptic.success();
+          playTone('match', matchCountSoFar); // pitch rises with each match
 
-            const dot = document.getElementById(`pdot-${i}`);
-            if (dot) dot.classList.add('is-hit');
+          const dot = document.getElementById(`pdot-${i}`);
+          if (dot) dot.classList.add('is-hit');
 
-            const pool = MATCH_WHISPER_POOLS[matchCountSoFar];
-            if (pool) {
-              setTimeout(() => {
-                whisperEl.textContent = pickUnique(pool, `match_${matchCountSoFar}`);
-              }, 400);
-            }
-
-          } else {
-            ballEl.classList.add('num-ball--draw', 'is-dropped');
-            if (nmData && nmData.proximity !== 'miss') {
-              ballEl.classList.add('is-near-miss');
-            }
-            haptic.light();
-            playTone('drop');
-
-            const dot = document.getElementById(`pdot-${i}`);
-            if (dot) setTimeout(() => dot.classList.add('is-miss'), 300);
-
-            if (matchCountSoFar === 0 && i < 5) {
-              setTimeout(() => {
-                whisperEl.textContent = pickUnique(
-                  pickAdaptivePool(WHISPERS_BALL_DROP, WHISPERS_BALL_DROP_PASSIVE, WHISPERS_BALL_DROP_ACTIVE),
-                  'ball_drop',
-                );
-              }, 300);
-            }
+          const pool = MATCH_WHISPER_POOLS[matchCountSoFar];
+          if (pool) {
+            setTimeout(() => {
+              whisperEl.textContent = pickUnique(pool, `match_${matchCountSoFar}`);
+            }, 400);
           }
-        }, dropTimes[i]);
-      });
 
-      // ── Final dramatic pause then result (paced) ─────
-      // 2000ms beat after last ball drops, then 1500ms before routing to result.
-      const pauseTime = Math.round(21200 * pace);
-      const resultTime = Math.round(22700 * pace);
+        } else {
+          ballEl.classList.add('num-ball--draw', 'is-dropped');
+          if (nmData && nmData.proximity !== 'miss') {
+            ballEl.classList.add('is-near-miss');
+          }
+          haptic.light();
+          playTone('drop');
 
-      setTimeout(() => {
+          const dot = document.getElementById(`pdot-${i}`);
+          if (dot) setTimeout(() => dot.classList.add('is-miss'), 300);
+
+          if (matchCountSoFar === 0 && i < 5) {
+            setTimeout(() => {
+              whisperEl.textContent = pickUnique(
+                pickAdaptivePool(WHISPERS_BALL_DROP, WHISPERS_BALL_DROP_PASSIVE, WHISPERS_BALL_DROP_ACTIVE),
+                'ball_drop',
+              );
+            }, 300);
+          }
+        }
+      }
+
+      // ── Finale: dramatic pause, then route to result ──
+      function doFinalePause() {
         whisperEl.textContent = pickUnique(
           pickAdaptivePool(WHISPERS_FINAL_PAUSE, WHISPERS_FINAL_PAUSE_PASSIVE, WHISPERS_FINAL_PAUSE_ACTIVE),
           'final_pause',
         );
         haptic.heavy();
         playTone('pause');
-      }, pauseTime);
+      }
 
-      setTimeout(() => {
+      function doResult() {
         // Record draw
         recordDraw({ ...score, playerNumbers: numbers });
 
@@ -313,15 +310,54 @@ export function initReveal() {
         if (score.matchCount >= 4) playTone('bigwin');
         else if (score.isWin) playTone('win');
 
+        // Tear down the spin engine (rAF loop + listeners) now the draw is done.
+        if (_spinStop) { _spinStop(); _spinStop = null; }
         _animating = false;
         goto('result', {
           score,
           nearMissData: nearMiss,
         });
-      }, resultTime);
+      }
+
+      // ── Drive the draw: active-play spin, or classic drop loop ──
+      if (CONFIG.ACTIVE_PLAY && CONFIG.ACTIVE_PLAY.ENABLED) {
+        // Active Play: each ball spins; player taps/swipes/holds to grab it.
+        // The number is already decided — gestures are cosmetic. See reveal-spin.js.
+        _spinStop = runSpinDraw({
+          drawn,
+          numbers,
+          pace,
+          drawAreaEl,
+          getBall: (i) => document.getElementById(`dball-${i}`),
+          onBallResolved: revealBall,
+          variant: CONFIG.ACTIVE_PLAY_LANDING_VARIANT,
+          onAllResolved() {
+            doFinalePause();
+            setTimeout(doResult, Math.round(CONFIG.ACTIVE_PLAY.PAUSE_TO_RESULT_MS * pace));
+          },
+        });
+      } else {
+        // ── Classic drop loop (preserved — the reversibility fallback) ──
+        // Gaps between drops escalate for suspense but cap at 4s — 5s/6s tails
+        // were losing attention in playtest observations.
+        const BASE_DROP_TIMES = [1500, 4000, 7200, 11200, 15200, 19200];
+        const dropTimes = BASE_DROP_TIMES.map(t => Math.round(t * pace));
+
+        drawn.forEach((drawnNum, i) => {
+          setTimeout(() => revealBall(i), dropTimes[i]);
+        });
+
+        // 2000ms beat after last ball drops, then 1500ms before routing to result.
+        const pauseTime = Math.round(21200 * pace);
+        const resultTime = Math.round(22700 * pace);
+        setTimeout(doFinalePause, pauseTime);
+        setTimeout(doResult, resultTime);
+      }
     },
 
     onExit() {
+      // Tear down the active-play spin (rAF, timers, pointer capture, listeners).
+      if (_spinStop) { _spinStop(); _spinStop = null; }
       _animating = false;
     },
   });

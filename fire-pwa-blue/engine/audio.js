@@ -156,6 +156,13 @@ export function playTone(name, matchNumber = 1) {
       synth({ freq: 880, type: 'sine',     vol: 0.1, attack: 0.04, decay: 0.1, release: 0.3, duration: 0.5, delay: 0.1  });
       break;
     }
+
+    // Active-play "catch" — the ball locks under your thumb (slot stop-button)
+    case 'lock': {
+      synth({ freq: 880, type: 'square',   vol: 0.16, attack: 0.002, decay: 0.03, release: 0.04, duration: 0.08 });
+      synth({ freq: 180, type: 'triangle', vol: 0.30, attack: 0.002, decay: 0.05, release: 0.07, duration: 0.13, delay: 0.015 });
+      break;
+    }
   }
 }
 
