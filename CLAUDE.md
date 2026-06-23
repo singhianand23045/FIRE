@@ -18,3 +18,4 @@ Key routing rules:
 - Architecture review → invoke plan-eng-review
 - Save progress, checkpoint, resume → invoke checkpoint
 - Code quality, health check → invoke health
+- Before calling ANY motion / animation / feel / interaction feature "done" → read and run the pre-ship gate in `docs/Feel-Review-Skill.md` (self-review so Anand doesn't have to be the eyes)
